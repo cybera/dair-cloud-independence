@@ -1,0 +1,93 @@
+version: '3'
+
+services:
+  postgres:
+    image: postgres:latest
+    container_name: postgres
+    restart: always
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=admin
+      - POSTGRES_DB=django_db
+
+  app:
+    build: ./app
+    container_name: app
+    restart: on-failure
+    volumes:
+      - ./app:/src
+    expose:
+      - "8000"
+    depends_on:
+      - postgres
+    command: bash -c 'python3 manage.py makemigrations && python3 manage.py migrate --noinput && python3 manage.py runserver --ipv6 "[::]:8000"'
+
+  nginx:
+    image: nginx:latest
+    container_name: nginx
+    restart: always
+    ports:
+      - "80:80"
+      - "3000:3000"
+    volumes:
+      - ./nginx:/etc/nginx/conf.d
+      - ./app/wait-for-it.sh:/wait-for-it.sh
+    depends_on:
+      - app
+
+  sensu-backend:
+    image: sensu/sensu:latest
+    container_name: sensu-backend
+    volumes:
+      - ./data/sensu-backend:/var/lib/sensu
+    command: sensu-backend start
+    hostname: sensu-backend
+    restart: always
+    ports:
+      - "2380:2380"
+        #- "3000:3000" - via nginx
+      - "8080:8080"
+      - "8081:8081"
+
+  sensu-agent:
+    build: ./sensu-agent
+    container_name: sensu-agent
+    restart: on-failure
+    environment:
+      - SUBSCRIPTIONS=services
+    depends_on:
+      - sensu-backend
+
+  influxdb:
+    image: influxdb:latest
+    container_name: influxdb
+    volumes:
+      # Mount for influxdb data directory
+      - ./data/influxdb/data:/var/lib/influxdb/
+      # Mount for influxdb configuration
+      - ./data/influxdb/config/:/etc/influxdb/
+    ports:
+      # API for InfluxDB served on port 8086
+      - "8086:8086"
+      - "8082:8082"
+      # UDP Port
+      - "8089:8089"
+
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    volumes:
+      - ./grafana:/usr/share/grafana/conf/provisioning/
+    environment:
+      - GF_PATHS_PROVISIONING=/usr/share/grafana/conf/provisioning/
+      - GF_SERVER_ROOT_URL=http://%(domain)s/grafana/
+      - GF_SECURITY_ADMIN_PASSWORD=P@ssw0rd!
+
+volumes:
+  influx-data:
+    driver: local
+  pgdata: {}

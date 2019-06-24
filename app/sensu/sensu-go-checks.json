@@ -1,0 +1,116 @@
+{
+  "type": "CheckConfig",
+  "api_version": "core/v2",
+  "metadata": {
+    "name": "docker_process",
+    "namespace": "default"
+  },
+  "spec": {
+    "command": "/usr/lib/nagios/plugins/check_procs -c 1 -C  dockerd",
+    "handlers": [],
+    "high_flap_threshold": 0,
+    "interval": 60,
+    "low_flap_threshold": 0,
+    "publish": true,
+    "runtime_assets": [
+      "check-plugins"
+    ],
+    "subscriptions": [
+      "host"
+    ],
+    "check_hooks": null,
+    "stdin": false,
+    "subdue": null,
+    "ttl": 120,
+    "timeout": 0,
+    "round_robin": false,
+    "env_vars": null
+  }
+}
+{
+  "type": "CheckConfig",
+  "api_version": "core/v2",
+  "metadata": {
+    "name": "containers_running",
+    "namespace": "default"
+  },
+  "spec": {
+    "command": "check_docker --status running --containers nginx grafana app influxdb postgres sensu-backend",
+    "handlers": [],
+    "high_flap_threshold": 0,
+    "interval": 60,
+    "low_flap_threshold": 0,
+    "publish": true,
+    "runtime_assets": [
+      "check-plugins"
+    ],
+    "subscriptions": [
+      "host"
+    ],
+    "check_hooks": null,
+    "stdin": false,
+    "subdue": null,
+    "ttl": 120,
+    "timeout": 0,
+    "round_robin": false,
+    "env_vars": null
+  }
+}
+{
+  "type": "CheckConfig",
+  "api_version": "core/v2",
+  "metadata": {
+    "name": "webapp_running",
+    "namespace": "default"
+  },
+  "spec": {
+    "command": "/usr/lib/nagios/plugins/check_http -H nginx -u /polls/",
+    "handlers": [],
+    "high_flap_threshold": 0,
+    "interval": 60,
+    "low_flap_threshold": 0,
+    "publish": true,
+    "runtime_assets": [
+      "check-plugins"
+    ],
+    "subscriptions": [
+      "services"
+    ],
+    "check_hooks": null,
+    "stdin": false,
+    "subdue": null,
+    "ttl": 120,
+    "timeout": 0,
+    "round_robin": false,
+    "env_vars": null
+  }
+}
+{
+  "type": "CheckConfig",
+  "api_version": "core/v2",
+  "metadata": {
+    "name": "postgres_alive",
+    "namespace": "default"
+  },
+  "spec": {
+    "command": "/usr/lib/nagios/plugins/check_pgsql -H postgres -P 5432 -l admin -p admin",
+    "handlers": [],
+    "high_flap_threshold": 0,
+    "interval": 600,
+    "low_flap_threshold": 0,
+    "publish": true,
+    "runtime_assets": [
+      "check-plugins"
+    ],
+    "subscriptions": [
+      "services"
+    ],
+    "check_hooks": null,
+    "stdin": false,
+    "subdue": null,
+    "ttl": 0,
+    "timeout": 0,
+    "round_robin": false,
+    "env_vars": null
+  }
+}

@@ -1,0 +1,8 @@
+**/*.swp
+**/*.terraform
+**/*.tfstate*
+**/rclone.conf
+**/id_rsa*
+**/id_dsa*
+**/*.pem
+**/.envrc

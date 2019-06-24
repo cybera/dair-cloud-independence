@@ -1,0 +1,2 @@
+# Backup application cron items
+5 1 * * * root /usr/local/bin/backupApplication.sh > /dev/null
