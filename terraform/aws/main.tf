@@ -129,23 +129,13 @@ resource "aws_eip" "django_eip" {
   tags = "${var.tags}"
 }
 
-output "public_ip" {
-  value = "${aws_eip.django_eip.public_ip}"
+# Deploy the application to the virtual machine
+module "deploy_app" {
+  source     = "../deploy_app"
+  ip_address = "${aws_instance.django_instance.public_ip}"
+  ssh_key    = "${file("../../key/id_rsa")}"
 }
 
-resource "null_resource" "django" {
-  connection {
-    user        = "ubuntu"
-    host        = "${aws_instance.django_instance.public_ip}"
-    private_key = "${file("../../key/id_rsa")}"
-  }
-
-  provisioner "file" {
-    source      = "../../app"
-    destination = "/home/ubuntu/app"
-  }
-
-  provisioner "remote-exec" {
-    inline = ["sudo bash /home/ubuntu/app/bootstrap.sh"]
-  }
+output "public_ip" {
+  value = "${aws_instance.django_instance.public_ip}"
 }

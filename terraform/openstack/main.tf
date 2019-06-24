@@ -82,21 +82,11 @@ resource "openstack_compute_floatingip_associate_v2" "public_ip" {
   floating_ip = "${openstack_networking_floatingip_v2.public_ip.address}"
 }
 
-resource "null_resource" "django" {
-  connection {
-    user        = "ubuntu"
-    host        = "${openstack_compute_floatingip_associate_v2.public_ip.floating_ip}"
-    private_key = "${file("../../key/id_rsa")}"
-  }
-
-  provisioner "file" {
-    source      = "../../app"
-    destination = "/home/ubuntu/app"
-  }
-
-  provisioner "remote-exec" {
-    inline = ["sudo bash /home/ubuntu/app/bootstrap.sh"]
-  }
+# Deploy the application to the virtual machine
+module "deploy_app" {
+  source     = "../deploy_app"
+  ip_address = "${openstack_compute_floatingip_associate_v2.public_ip.floating_ip}"
+  ssh_key    = "${file("../../key/id_rsa")}"
 }
 
 output "public_ip" {

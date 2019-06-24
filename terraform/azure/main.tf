@@ -1,14 +1,14 @@
+# Create an Azure Resource Group
 resource "azurerm_resource_group" "django_group" {
-  name     = "django_DAIRTerraformGroup"
+  name     = "django"
   location = "${var.azure_location}"
 
   tags = "${var.tags}"
-
 }
 
-# create a virtual network
-resource "azurerm_virtual_network" "django_vn" {
-  name                = "django_vn"
+# Create a virtual network
+resource "azurerm_virtual_network" "django_network" {
+  name                = "django_network"
   address_space       = ["10.0.0.0/16"]
   location            = "${var.azure_location}"
   resource_group_name = "${azurerm_resource_group.django_group.name}"
@@ -16,16 +16,16 @@ resource "azurerm_virtual_network" "django_vn" {
   tags = "${var.tags}"
 }
 
-# create subnet
+# Create a subnet
 resource "azurerm_subnet" "django_subnet" {
-  name                 = "django_sub"
+  name                 = "django_subnet"
   resource_group_name  = "${azurerm_resource_group.django_group.name}"
-  virtual_network_name = "${azurerm_virtual_network.django_vn.name}"
+  virtual_network_name = "${azurerm_virtual_network.django_network.name}"
   address_prefix       = "10.0.2.0/24"
 }
 
-# create public IP
-resource "azurerm_public_ip" "django_ips" {
+# Create public IP
+resource "azurerm_public_ip" "public_ip" {
   name                = "django_ip"
   location            = "${var.azure_location}"
   resource_group_name = "${azurerm_resource_group.django_group.name}"
@@ -34,9 +34,9 @@ resource "azurerm_public_ip" "django_ips" {
   tags = "${var.tags}"
 }
 
-
-resource "azurerm_network_security_group" "django_nsg" {
-  name                = "djangoNetworkSecurityGroup"
+# Create a security group
+resource "azurerm_network_security_group" "django_security_group" {
+  name                = "djang_security_group"
   location            = "${var.azure_location}"
   resource_group_name = "${azurerm_resource_group.django_group.name}"
 
@@ -91,23 +91,23 @@ resource "azurerm_network_security_group" "django_nsg" {
   tags = "${var.tags}"
 }
 
-# create network interface
+# Create a network interface
 resource "azurerm_network_interface" "django_nic" {
-  name                = "django_tfni"
+  name                = "django_nic"
   location            = "${var.azure_location}"
   resource_group_name = "${azurerm_resource_group.django_group.name}"
 
   ip_configuration {
-    name                          = "testconfiguration1"
+    name                          = "django_ip_1"
     subnet_id                     = "${azurerm_subnet.django_subnet.id}"
     private_ip_address_allocation = "static"
     private_ip_address            = "10.0.2.5"
-    public_ip_address_id          = "${azurerm_public_ip.django_ips.id}"
+    public_ip_address_id          = "${azurerm_public_ip.public_ip.id}"
   }
 }
 
 # Generate random 8 character strings
-resource "random_id" "randomId" {
+resource "random_id" "django_storage_id" {
   keepers = {
     # Generate a new ID only when a new resource group is defined
     resource_group = "${azurerm_resource_group.django_group.name}"
@@ -116,9 +116,9 @@ resource "random_id" "randomId" {
   byte_length = 8
 }
 
-# create storage account
+# Create a storage account
 resource "azurerm_storage_account" "django_storage" {
-  name                     = "django${random_id.randomId.hex}"
+  name                     = "django${random_id.django_storage_id.hex}"
   resource_group_name      = "${azurerm_resource_group.django_group.name}"
   location                 = "${var.azure_location}"
   account_tier             = "Standard"
@@ -127,16 +127,16 @@ resource "azurerm_storage_account" "django_storage" {
   tags = "${var.tags}"
 }
 
-# create storage container
+# Create a storage container
 resource "azurerm_storage_container" "django_storage_container" {
-  name                  = "django-vhd"
+  name                  = "djangovhd"
   resource_group_name   = "${azurerm_resource_group.django_group.name}"
   storage_account_name  = "${azurerm_storage_account.django_storage.name}"
   container_access_type = "private"
   depends_on            = ["azurerm_storage_account.django_storage"]
 }
 
-# create virtual machine
+# Create a virtual machine
 resource "azurerm_virtual_machine" "django_vm" {
   name                  = "${var.name}.${var.domain}"
   location              = "${var.azure_location}"
@@ -179,23 +179,19 @@ resource "azurerm_virtual_machine" "django_vm" {
   tags = "${var.tags}"
 }
 
-resource "null_resource" "django" {
-  connection {
-    user        = "ubuntu"
-    host        = "${azurerm_public_ip.django_ips.ip_address}"
-    private_key = "${file("../../key/id_rsa")}"
-  }
+# Query for the public IP once the virtual machine is running
+data "azurerm_public_ip" "public_ip" {
+  name                = "django_ip"
+  resource_group_name = "${azurerm_virtual_machine.django_vm.resource_group_name}"
+}
 
-  provisioner "file" {
-    source      = "../../app"
-    destination = "/home/ubuntu/app"
-  }
-
-  provisioner "remote-exec" {
-    inline = ["sudo bash /home/ubuntu/app/bootstrap.sh"]
-  }
+# Deploy the application to the virtual machine
+module "deploy_app" {
+  source     = "../deploy_app"
+  ip_address = "${data.azurerm_public_ip.public_ip.ip_address}"
+  ssh_key    = "${file("../../key/id_rsa")}"
 }
 
 output "public_ip" {
-  value = "${azurerm_public_ip.django_ips.ip_address}"
+  value = "${data.azurerm_public_ip.public_ip.ip_address}"
 }

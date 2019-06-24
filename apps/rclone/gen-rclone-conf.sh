@@ -1,4 +1,4 @@
-cat > ../../app/rclone/rclone.conf <<EOF
+cat > ../../apps/rclone/rclone.conf <<EOF
 [remote]
 user = ${OS_USERNAME}
 key = ${OS_PASSWORD}
