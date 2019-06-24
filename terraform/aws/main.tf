@@ -139,3 +139,8 @@ module "deploy_app" {
 output "public_ip" {
   value = "${aws_instance.django_instance.public_ip}"
 }
+
+output "polls_url" {
+  value = "http://${aws_instance.django_instance.public_ip}/polls"
+}
+

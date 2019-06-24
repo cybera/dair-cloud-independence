@@ -92,3 +92,8 @@ module "deploy_app" {
 output "public_ip" {
   value = "${openstack_compute_floatingip_associate_v2.public_ip.floating_ip}"
 }
+
+output "polls_url" {
+  value = "http://${openstack_compute_floatingip_associate_v2.public_ip.floating_ip}/polls"
+}
+

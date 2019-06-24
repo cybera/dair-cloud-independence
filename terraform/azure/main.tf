@@ -195,3 +195,7 @@ module "deploy_app" {
 output "public_ip" {
   value = "${data.azurerm_public_ip.public_ip.ip_address}"
 }
+
+output "polls_url" {
+  value = "http://${data.azurerm_public_ip.public_ip.ip_address}/polls"
+}

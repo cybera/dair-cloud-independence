@@ -55,4 +55,4 @@ deploy_app: check-env
 
 restart_app: check-env
 	@_public_ip=$(shell make get-public-ip ENV=$(ENV)) ; \
-	ssh -i key/id_rsa ubuntu@$$_public_ip "cd app/app/docker_files && sudo docker-compose down && sudo docker-compose up -d"
+	ssh -i key/id_rsa ubuntu@$$_public_ip "cd apps/docker_files && sudo docker-compose down && sudo docker-compose up -d"

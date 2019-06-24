@@ -9,7 +9,7 @@ resource "null_resource" "copy_files" {
   }
 
   provisioner "file" {
-    source      = "../../apps"
+    source      = "../../apps/"
     destination = "/home/ubuntu/apps"
   }
 }
