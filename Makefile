@@ -26,6 +26,7 @@ plan: check-env init
 	@cd $(TF_PATH)/$(ENV); terraform plan
 
 apply: check-env plan
+	bash apps/rclone/gen-rclone-conf.sh $(ENV)
 	@cd $(TF_PATH)/$(ENV); terraform apply
 
 auto-apply: check-env plan

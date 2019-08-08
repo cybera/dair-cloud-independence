@@ -144,6 +144,11 @@ install_metrics() {
   systemctl restart telegraf
 }
 
+install_rclone() {
+  echo -e "${GREEN} =====> Installing Rclone${NC}"
+  bash ${EXE_PATH}/rclone/rclone-setup.sh
+}
+
 # Main Script flow
 install_docker
 install_docker_machine
@@ -153,3 +158,4 @@ prep_docker
 run_containers
 install_sensu
 install_metrics
+install_rclone

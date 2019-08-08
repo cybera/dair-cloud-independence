@@ -136,6 +136,11 @@ resource "azurerm_storage_container" "django_storage_container" {
   depends_on            = ["azurerm_storage_account.django_storage"]
 }
 
+resource "local_file" "foo" {
+    content = "[crypt]\n type = azureblob\n account =  ${azurerm_storage_account.django_storage.name}\n key = ${azurerm_storage_account.django_storage.primary_access_key}"
+    filename = "${path.module}/../../apps/rclone/rclone.conf"
+}
+
 # Create a virtual machine
 resource "azurerm_virtual_machine" "django_vm" {
   name                  = "${var.name}.${var.domain}"
