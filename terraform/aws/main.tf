@@ -132,15 +132,15 @@ resource "aws_eip" "django_eip" {
 # Deploy the application to the virtual machine
 module "deploy_app" {
   source     = "../deploy_app"
-  ip_address = "${aws_instance.django_instance.public_ip}"
+  ip_address = "${aws_eip.django_eip.public_ip}"
   ssh_key    = "${file("../../key/id_rsa")}"
 }
 
 output "public_ip" {
-  value = "${aws_instance.django_instance.public_ip}"
+  value = "${aws_eip.django_eip.public_ip}"
 }
 
 output "polls_url" {
-  value = "http://${aws_instance.django_instance.public_ip}/polls"
+  value = "http://${aws_eip.django_eip.public_ip}/polls"
 }
 
