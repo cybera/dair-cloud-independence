@@ -1,5 +1,5 @@
 #Dockerfile
-FROM jenkinsci/jenkins
+FROM jenkins/jenkins:lts
 MAINTAINER Ben Leavitt <ben.leavitt@cybera.ca>
 USER root
 RUN apt-get update && apt-get install -y tree nano curl sudo
