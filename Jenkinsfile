@@ -14,7 +14,7 @@ pipeline {
                 }
                 stage('Test') {
 			steps {
-                                sh 'curl http://172.17.0.1/polls/'
+                                sh 'curl -q http://172.17.0.1/polls/'
                         }
                 }
                 stage('Cleanup') {

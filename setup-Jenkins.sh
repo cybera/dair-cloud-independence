@@ -16,20 +16,31 @@ sudo docker run -d \
 	jenkins:latest
 echo "Building containers"
 sleep 15
+echo ""
 echo "Initial Admin Password below"
+TEST=`sudo ls /var/lib/docker/volumes/jenkins_home/_data/secrets/ | grep initialAdminPassword`
+while [[ "$TEST" != "initialAdminPassword" ]]
+do
+	sleep 2
+	TEST=`sudo ls /var/lib/docker/volumes/jenkins_home/_data/secrets/ | grep initialAdminPassword`
+done
 INITPASS=`sudo cat /var/lib/docker/volumes/jenkins_home/_data/secrets/initialAdminPassword`
 echo $INITPASS
+echo ""
+echo ""
 echo "Please visit your servers public IP to continue Jenkins setup"
-while :
+IP4=`curl -s4 ifconfig.co`
+IP6=`curl -s6 ifconfig.co`
+echo "IPv4: http://$IP4:8180"
+echo "IPv6: http://[$IP6]:8180"
+TEST=`sudo ls /var/lib/docker/volumes/jenkins_home/_data/secrets/ | grep initialAdminPassword`
+while [[ "$TEST" != "" ]]
 do
-	TESTPASS=`sudo cat /var/lib/docker/volumes/jenkins_home/_data/secrets/initialAdminPassword`
-	if [ "$TESTPASS" != "$INITPASS" ]; then
-		echo $TESTPASS
-		break
-	fi
+        sleep 2
+        TEST=`sudo ls /var/lib/docker/volumes/jenkins_home/_data/secrets/ | grep initialAdminPassword`
 done
-echo "Done setup! Waiting 10 seconds to restart jenkins"
-sleep 10
+echo "Done setup! Restarting Jenkins"
+sleep 5
 sudo docker restart jenkins
 sudo ln -s /var/lib/docker/volumes/jenkins_home/_data /var/jenkins_home
 echo "Jenkins restarted, please check the servers local IP to verify everything is up and running"

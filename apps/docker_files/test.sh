@@ -4,7 +4,7 @@
 x=1
 while :
 do
-  if curl http://172.17.0.1/polls/
+  if curl -q http://172.17.0.1/polls/
   then
     echo Up and running
     break
