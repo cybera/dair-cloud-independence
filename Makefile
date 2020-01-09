@@ -42,7 +42,7 @@ destroy: check-env
 	@cd $(TF_PATH)/$(ENV); terraform destroy -force
 
 create-sshkey:
-	@cd key && ssh-keygen -t rsa -N '' -f id_rsa
+	@mkdir -p key && cd key && ssh-keygen -t rsa -N '' -f id_rsa
 
 get-public-ip:
 	@cd $(TF_PATH)/$(ENV); terraform show -no-color | grep 'public_ip =' | cut -d= -f2 | tr -d \" | tr -d ' '

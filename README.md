@@ -1,4 +1,4 @@
-This repository contains the code for the DAIR Cloud Independence Tutorial 1
+This repository contains the code used for Cybera DAIR Cloud Independence Tutorials
 
 # Repository Basics
 
@@ -124,12 +124,14 @@ make apply ENV=openstack
 
 > Note: If the process times out, you can try re-running the command again.
 
-You can now access your application at: http://<public_ip>/polls.
+You can now access your application at: http://public_ip/polls.
+You can admin your application at: http://public_ip/admin
+username `admin` and password `P@ssw0rd!`
 
-Sensu/Monitoring can be viewed at http://<public_ip>:3000/. You can log in with
-username `admin` and password `P@ssw0rd!`.
+Sensu/Monitoring can be viewed at http://public_ip:3000/. You can log in with
+username `admin` and password `P@ssw0rd!`
 
-Grafana/Metrics can be viewed at http://<public_ip>:3000/grafana. You can log
+Grafana/Metrics can be viewed at http://public_ip:3000/grafana. You can log
 in with username `admin` and password `P@ssw0rd!`
 
 # Tear Down
@@ -153,12 +155,25 @@ ssh -i key/id_rsa ubuntu@<public_ip>
 Then run:
 
 ```
-docker ps -a
+sudo docker ps -a
 ```
 
 # Updating your application
 
-Once you have changes to your application you wish to deploy you can do so by:
+Once you have changes to your application you wish to deploy you can do so by 
+making changes to the `apps/docker_files` folder. 
+
+Inside we have our `app` folder that holds the example application data. This 
+is where you would put your custom code and following updates. You can modify 
+the application docker container by editing the `apps/docker_files/app/Dockerfile` 
+file. This file sets the base Docker image, environment variables, and various 
+commands and files needed for container setup.
+
+Inside the same `apps/docker_files` folder we have the `docker-compose.yml` file. 
+Here you can find the app: service and make changes accordingly. You can see where 
+the app folder is mounted on the docker instance, behaviour on failure, exposed 
+ports, what services the container depends on, and the commands executed on the 
+server to start your application.
 
 ### Security Gotchas
 
@@ -168,3 +183,45 @@ securing these settings with more appropriate defaults:
 
 * `ALLOWED_HOSTS` in Django is set to `*`. In production, this should be
   appropriately limited.
+  
+* In terraform/aws/terraform.tfvars a hard coded `allowed_net` variable is set to 0.0.0.0/0 allowing all traffic to the demo instnace. This should be looked into and secured if you would like to block general web traffic.
+
+# Tool Descriptions
+## Python and Django - Application Language and Framework
+Python is an open source scripting language popular for its approachability. As a high level language most of the code is human readable. As an interpreted language Python scripts are flexible and portable.
+
+Django is a framework written in Python that streamlines development of web applications.
+
+## Git - Source Control Versioning and Management
+Git is a distributed version control system (DVCS) supporting history, branching, tagging, and conflict merging. Hosted git collaboration is supported by many providers (GitHub, etc.) as well as open source self hosted solutions.
+
+## Nginx - Load balancer and reverse proxy
+Nginx [engine x] is an open source flexible reverse proxy that securely processes connections and relays them to an application service. Nginx can also terminate SSL connections, directly serve static content, and perform caching.
+
+## PostgreSQL - Database Server
+PostgreSQL is an object-relational database that holds our tutorial applications dynamic data. PostgreSQL is open source and very mature with over 30 years of development behind it.
+
+Many public cloud providers offer managed PostgreSQL databases, or it can be self hosted as we have done in the tutorial.
+
+## Terraform - Multi-Cloud deployment tool
+Terraform is an infrastructure as code tool that provisions and configures compute, storage, networking, and many other resources needed for your applications.
+
+Terraform uses infrastructure blueprints to build components on your chosen cloud provider. Terraform blueprints can be stored in git or other SCM tools facilitating version control and other best practices.
+
+## Docker - Container Service
+Docker is a container tool that builds and manages portable application environments. Lighter than virtual machines containers bundle code, tools, libraries, network layout, and overall environment configuration. Docker allows an application stack to run anywhere the docker service is available. Bundled requirements and interconnections remove many distribution and mobility challenges.
+
+## Rclone - Cloud data copying tool
+rclone is a lightweight tool for copying data around various cloud targets. Highly configurable, rclone will run on and talk to most storage systems allowing you to use one tool to move data between nearly all your clouds.
+
+## Sensu - Service health monitor
+Sensu (specifically Sensu Go) is an open source telemetry and service health checking solution. Easy to setup and highly scalable Sensu is designed to monitor systems across clouds. Sensu Go can also act as an event pipeline facilitating automation.
+
+## Grafana - Data visualization
+Grafana is an open source analytics & monitoring solution for every database. It works with other tools to collect and visualize data. Grafana can collect data from many sources, such as InfluxDB as shown in our tutorial. 
+
+## InfluxDB - Time Series Database
+InfluxDB is the open source time series database of our metrics that Grafana will query for visualization.
+
+## Jenkins - Automation and CI/CD Platform
+Jenkins is a mature open source automation server that is a popular CI/CD tool partially due to the large number of available plugins.
