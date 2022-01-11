@@ -32,8 +32,14 @@ jobs:
       # Runs a set of commands using the runners shell
       - name: Run a multi-line script
         run: |
-          echo Add other actions to build,
-          echo test, and deploy your project.
+          echo "# Configure the OpenStack Provider
+provider \"openstack\" {
+  user_name   = \"$OS_USERNAME\"
+  tenant_name = \"$OS_PROJECT_NAME\"
+  password    = \"$OS_PASSWORD\"
+  auth_url    = \"$OS_AUTH_URL\"
+  region      = \"$OS_REGION_NAME\"
+}" >> dair-cloud-independence/terraform/openstack/main.tf
 
       # Show all checked out files
       - name: Run tree command
