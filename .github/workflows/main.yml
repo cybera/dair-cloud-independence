@@ -32,14 +32,14 @@ jobs:
       # Runs a set of commands using the runners shell
       - name: Run a multi-line script
         run: |
-          echo "# Configure the OpenStack Provider
-provider \"openstack\" {
-  user_name   = \"$OS_USERNAME\"
-  tenant_name = \"$OS_PROJECT_NAME\"
-  password    = \"$OS_PASSWORD\"
-  auth_url    = \"$OS_AUTH_URL\"
-  region      = \"$OS_REGION_NAME\"
-}" >> dair-cloud-independence/terraform/openstack/main.tf
+          echo "# Configure the OpenStack Provider" >> dair-cloud-independence/terraform/openstack/main.tf
+          echo "provider \"openstack\" {" >> dair-cloud-independence/terraform/openstack/main.tf
+          echo "user_name   = \"$OS_USERNAME\"" >> dair-cloud-independence/terraform/openstack/main.tf
+          echo "tenant_name = \"$OS_PROJECT_NAME\" " >> dair-cloud-independence/terraform/openstack/main.tf
+          echo "password    = \"$OS_PASSWORD\" " >> dair-cloud-independence/terraform/openstack/main.tf
+          echo "auth_url    = \"$OS_AUTH_URL\" " >> dair-cloud-independence/terraform/openstack/main.tf
+          echo "region      = \"$OS_REGION_NAME\" " >> dair-cloud-independence/terraform/openstack/main.tf
+          echo "} " >> dair-cloud-independence/terraform/openstack/main.tf
 
       # Show all checked out files
       - name: Run tree command
