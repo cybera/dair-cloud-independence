@@ -33,6 +33,7 @@ jobs:
       - name: Setup env vars and tree
         run: |
           tree
+          echo $OS_AUTH_URL
           echo "# Configure the OpenStack Provider" >> ./terraform/openstack/main.tf
           echo "provider \"openstack\" {" >> ./terraform/openstack/main.tf
           echo "password    = \"$OS_PASSWORD\" " >> ./terraform/openstack/main.tf
