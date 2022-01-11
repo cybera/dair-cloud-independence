@@ -1,3 +1,13 @@
+terraform {
+required_version = ">= 0.14.0"
+  required_providers {
+    openstack = {
+      source  = "terraform-provider-openstack/openstack"
+      version = "~> 1.35.0"
+    }
+  }
+}
+
 resource "openstack_compute_keypair_v2" "django" {
   name       = "${var.name}"
   public_key = "${file("../../key/id_rsa.pub")}"
