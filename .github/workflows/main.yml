@@ -37,4 +37,7 @@ jobs:
 
       # Show all checked out files
       - name: Run tree command
-        run: tree
+        run: |
+          cd dair-cloud-independence
+          make create-sshkey
+          make plan ENV=openstack
