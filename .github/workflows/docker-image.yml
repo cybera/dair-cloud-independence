@@ -15,4 +15,13 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag my-image-name:$(date +%s)
+      run: cd apps/docker_files && /usr/local/bin/docker-compose up -d
+      #run: docker build . --file Dockerfile --tag my-image-name:$(date +%s)
+    - name: Check docker running stuff
+      run: docker ps
+    - name: Run test
+      run: ./apps/docker_files/test.sh
+    - name: Second test
+      run: curl -q http://172.17.0.1/polls/
+    - name: Cleanup
+      run: cd apps/docker_files && /usr/local/bin/docker-compose down
