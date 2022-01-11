@@ -42,3 +42,7 @@ jobs:
         run: |
           make create-sshkey
           make plan ENV=openstack
+          make apply ENV=openstack
+
+      - name: Teardown
+        run: make destroy ENV=openstack
