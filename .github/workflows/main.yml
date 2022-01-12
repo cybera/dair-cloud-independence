@@ -47,10 +47,11 @@ jobs:
       - name: Build Layer and collect public IP as env variable
         run: |
           make auto-apply ENV=openstack
-          PUBIP=`make get-public-ip`
+          run: echo "PUBIP=$(make get-public-ip)" >> $GITHUB_ENV
+          =`make get-public-ip`
           
       - name: First test is curl
-        run: curl -q http://$PUBIP/polls/
+        run: curl -q http://${{ env.PUBIP }}/polls/
         
       - name: Second test, this will not run
         run: echo WOW I shouldn't be here...
