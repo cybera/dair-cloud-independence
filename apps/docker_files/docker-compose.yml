@@ -53,14 +53,14 @@ services:
       - "8080:8080"
       - "8081:8081"
 
-  sensu-agent:
-    build: ./sensu-agent
-    container_name: sensu-agent
-    restart: on-failure
-    environment:
-      - SUBSCRIPTIONS=services
-    depends_on:
-      - sensu-backend
+#  sensu-agent:
+#    build: ./sensu-agent
+#    container_name: sensu-agent
+#    restart: on-failure
+#    environment:
+#      - SUBSCRIPTIONS=services
+#    depends_on:
+#      - sensu-backend
 
   influxdb:
     image: influxdb:latest
