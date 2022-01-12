@@ -43,6 +43,13 @@ jobs:
           make create-sshkey
           make plan ENV=openstack
           make auto-apply ENV=openstack
+          
+      - name: First test, this will fail
+        run: touch /this/path/does/not/exist
+        
+      - name: Second test, this will not run
+        run: echo WOW I shouldn't be here...
 
       - name: Teardown
+        if: always()
         run: make destroy ENV=openstack
