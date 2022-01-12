@@ -45,11 +45,17 @@ jobs:
         run: make plan ENV=openstack
         
       - name: Build Stack
-        run: |
-          make auto-apply ENV=openstack
-          make get-public-ip
-          make get-public-ip > publicIP
-          
+        run: make auto-apply ENV=openstack
+      
+      - name: Get public IP of instance
+        run: make get-public-ip
+
+      - name: ipTOFile
+        run: make get-public-ip > pubIP
+
+      - name: Get public IP from file
+        run: cat pubIP
+
       - name: Set IP of instance to variable
         run: echo "PUBIP=$(make get-public-ip)" >> $GITHUB_ENV
           
