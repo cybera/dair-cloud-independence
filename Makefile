@@ -39,7 +39,7 @@ show: check-env
 	@cd $(TF_PATH)/$(ENV); terraform show
 
 destroy: check-env
-	@cd $(TF_PATH)/$(ENV); terraform destroy -force
+	@cd $(TF_PATH)/$(ENV); terraform destroy -auto-approve
 
 create-sshkey:
 	@mkdir -p key && cd key && ssh-keygen -t rsa -N '' -f id_rsa
