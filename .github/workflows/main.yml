@@ -43,9 +43,11 @@ jobs:
           make create-sshkey
           make plan ENV=openstack
           make auto-apply ENV=openstack
+          PUBIP=`make get-public-ip`
+          apt-get update && apt-get install -y curl
           
-      - name: First test, this will fail
-        run: touch /this/path/does/not/exist
+      - name: First test is curl
+        run: curl -q http://$PUBIP/polls/
         
       - name: Second test, this will not run
         run: echo WOW I shouldn't be here...
