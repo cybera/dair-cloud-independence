@@ -47,19 +47,12 @@ jobs:
       - name: Build Stack
         run: make auto-apply ENV=openstack
 
-      - name: ipTOFile
-        run: make get-public-ip ENV=openstack > pubIP
-
       - name: Set IP of instance to variable
         run: echo "PUBIP=$(make get-public-ip ENV=openstack)" >> $GITHUB_ENV
       
       # Layer 2 Unit Tests
       - name: First test is curl
-        run: |
-          curl -q http://${{ env.PUBIP }}/polls/
-          EVAR=$(cat publicIP)
-          echo $EVAR
-          curl http://$EVAR/polls/
+        run: curl -q http://${{ env.PUBIP }}/polls/
         
       - name: Second test, this will not run
         run: ssh -i key/id_rsa ubuntu@${{ env.PUBIP }} sudo docker ps
