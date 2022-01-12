@@ -55,7 +55,7 @@ jobs:
         run: curl -q http://${{ env.PUBIP }}/polls/
         
       - name: Second test, this will not run
-        run: ssh -i key/id_rsa ubuntu@${{ env.PUBIP }} sudo docker ps
+        run: ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${{ env.PUBIP }} sudo docker ps
 
       # End -- Teardown environment
       - name: Teardown
