@@ -48,13 +48,10 @@ jobs:
         run: make auto-apply ENV=openstack
       
       - name: Get public IP of instance
-        run: make get-public-ip
+        run: make get-public-ip ENV=openstack
 
       - name: ipTOFile
-        run: make get-public-ip > pubIP
-
-      - name: Get public IP from file
-        run: cat pubIP
+        run: make get-public-ip ENV=openstack > pubIP
 
       - name: Set IP of instance to variable
         run: echo "PUBIP=$(make get-public-ip)" >> $GITHUB_ENV
@@ -67,7 +64,7 @@ jobs:
           curl http://$EVAR/polls/
         
       - name: Second test, this will not run
-        run: echo WOW I shouldn't be here...
+        run: ssh -i key/id_rsa ubuntu@${{ env.PUBIP }} sudo docker ps
 
       - name: Teardown
         if: always()
