@@ -44,11 +44,12 @@ jobs:
       - name: Layer 1 syntax checks
         run: make plan ENV=openstack
         
-      - name: Build Layer and collect public IP as env variable
+      - name: Build Stack
         run: |
           make auto-apply ENV=openstack
-          run: echo "PUBIP=$(make get-public-ip)" >> $GITHUB_ENV
-          =`make get-public-ip`
+          
+      - name: Set IP of instance to variable
+        run: echo "PUBIP=$(make get-public-ip)" >> $GITHUB_ENV
           
       - name: First test is curl
         run: curl -q http://${{ env.PUBIP }}/polls/
