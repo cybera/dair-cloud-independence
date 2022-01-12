@@ -45,7 +45,7 @@ create-sshkey:
 	@mkdir -p key && cd key && ssh-keygen -t rsa -N '' -f id_rsa
 
 get-public-ip:
-	@cd $(TF_PATH)/$(ENV); terraform show -no-color | grep 'public_ip =' | cut -d= -f2 | tr -d \" | tr -d ' '
+	@cd $(TF_PATH)/$(ENV); terraform output public_ip
 
 ssh:
 	@_public_ip=$(shell make get-public-ip ENV=$(ENV)) ; \
