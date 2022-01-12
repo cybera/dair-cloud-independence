@@ -41,21 +41,29 @@ jobs:
           echo "$SUPER_SECRET" >> ./terraform/openstack/main.tf
 
       # Layer 1 syntax check
-      - name: Layer 1 syntax checks
+      - name: Layer 1 Test 1 - make plan Terraform syntax checks
         run: make plan ENV=openstack
         
+      # Check syntax in apps/docker_files -- Just the docker_compose.yml?
+      
+      # Can we check requirements, code, packages, etc for best practices?
+      
+      # Is this where we start with inspec?
+        
       - name: Build Stack
-        run: make auto-apply ENV=openstack
-
-      - name: Set IP of instance to variable
-        run: echo "PUBIP=$(make get-public-ip ENV=openstack)" >> $GITHUB_ENV
+        run: | 
+          make auto-apply ENV=openstack
+          echo "PUBIP=$(make get-public-ip ENV=openstack)" >> $GITHUB_ENV      
       
       # Layer 2 Unit Tests
-      - name: First test is curl
+      - name: Layer 2 Test 1 - curl polls
         run: curl -q http://${{ env.PUBIP }}/polls/
-        
-      - name: Second test, this will not run
+
+      - name: Layer 2 Test 2 - Check running docker containers
         run: ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${{ env.PUBIP }} sudo docker ps
+
+      # Layer 3 End to End
+      # We need to loop in terratest I think
 
       # End -- Teardown environment
       - name: Teardown
