@@ -60,6 +60,7 @@ jobs:
         run: |
           ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${{ env.PUBIP }} sudo apt-get update
           ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${{ env.PUBIP }} sudo apt-get -y install ruby ruby-dev gcc g++ make
+          ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${{ env.PUBIP }} sudo gem install chef-utils -v 16.6.14
           ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${{ env.PUBIP }} sudo gem install inspec
 
       # Layer 2 Unit Tests
