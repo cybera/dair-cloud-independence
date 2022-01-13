@@ -71,7 +71,11 @@ jobs:
           # Below line should be safe as long as 2.7/2 is the default 2.7, but is a source of breakage
           ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${{ env.PUBIP }} sudo ln -s /usr/share/rvm/rubies/ruby-2.7.2/bin/gem /usr/local/bin/gem
           ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${{ env.PUBIP }} sudo ln -s /usr/share/rvm/rubies/ruby-2.7.2/bin/ruby /usr/local/bin/ruby
-          ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${{ env.PUBIP }} sudo gem install inspec
+
+
+      # Installing Inspec seperatly because it crashes
+      - name: Build Stack - Finish installing Inspec
+        run: ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${{ env.PUBIP }} sudo gem install inspec
 
       # Layer 2 Unit Tests
       - name: Layer 2 Test 1 - curl polls
