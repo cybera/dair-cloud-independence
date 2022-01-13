@@ -62,6 +62,9 @@ jobs:
       - name: Layer 2 Test 2 - Check running docker containers
         run: ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${{ env.PUBIP }} sudo docker ps
 
+      - name: Layer 2 Test 3 - This will fail
+        run: ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${{ env.PUBIP }} touch /file/that/can/not/be
+
       # Layer 3 End to End
       # We need to loop in terratest I think
 
