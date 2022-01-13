@@ -66,8 +66,10 @@ jobs:
           ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${{ env.PUBIP }} sudo apt-get update
           ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${{ env.PUBIP }} sudo apt-get install -y rvm
           ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${{ env.PUBIP }} sudo usermod -a -G rvm ubuntu
-          ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${{ env.PUBIP }} rvm user gemsets
-          ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${{ env.PUBIP }} rvm install ruby
+          ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${{ env.PUBIP }} /usr/share/rvm/bin/rvm user gemsets
+          ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${{ env.PUBIP }} /usr/share/rvm/bin/rvm install ruby 2.7
+          # Below line should be safe as long as 2.7/2 is the default 2.7, but is a source of breakage
+          ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${{ env.PUBIP }} export PATH=$PATH:/usr/share/rvm/rubies/ruby-2.7.2/bin
           ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${{ env.PUBIP }} gem install inspec
 
       # Layer 2 Unit Tests
