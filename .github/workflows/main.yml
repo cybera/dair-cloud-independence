@@ -75,7 +75,7 @@ jobs:
 
       # Installing Inspec seperatly because it crashes
       - name: Build Stack - Finish installing Inspec
-        run: ssh -o ServerAliveInterval=30 -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${{ env.PUBIP }} sudo gem install inspec
+        run: ssh -o ServerAliveInterval=30 -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${{ env.PUBIP }} "sh -c 'nohup sudo gem install inspec > /dev/null 2>&1 &'"
 
       # Layer 2 Unit Tests
       - name: Layer 2 Test 1 - curl polls
