@@ -53,8 +53,15 @@ jobs:
       - name: Build Stack
         run: | 
           make auto-apply ENV=openstack
-          echo "PUBIP=$(make get-public-ip ENV=openstack)" >> $GITHUB_ENV      
+          echo "PUBIP=$(make get-public-ip ENV=openstack)" >> $GITHUB_ENV
       
+      # Install Inspec on remote server
+      - name: Build Stack - Install Inspec on remote host
+        run: |
+          ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${{ env.PUBIP }} sudo apt-get update
+          ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${{ env.PUBIP }} sudo apt-get -y install ruby ruby-dev gcc g++ make
+          ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${{ env.PUBIP }} sudo gem install inspec
+
       # Layer 2 Unit Tests
       - name: Layer 2 Test 1 - curl polls
         run: curl -q http://${{ env.PUBIP }}/polls/
@@ -62,8 +69,8 @@ jobs:
       - name: Layer 2 Test 2 - Check running docker containers
         run: ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${{ env.PUBIP }} sudo docker ps
 
-      - name: Layer 2 Test 3 - This will fail
-        run: ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${{ env.PUBIP }} touch /file/that/can/not/be
+      - name: Layer 2 Test 3 - Example Inspec test of postgres container
+        run: ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${{ env.PUBIP }} inspec exec https://github.com/dev-sec/linux-baseline -t docker://postgres
 
       # Layer 3 End to End
       # We need to loop in terratest I think
