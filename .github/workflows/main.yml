@@ -82,6 +82,7 @@ jobs:
           ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${{ env.PUBIP }} sudo ln -s /usr/share/rvm/rubies/ruby-2.7.2/bin/inspec /usr/local/bin/inspec
           ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${{ env.PUBIP }} sudo ln -s /usr/share/rvm/rubies/ruby-2.7.2/bin/ruby_executable_hooks /usr/local/bin/ruby_executable_hooks
           ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${{ env.PUBIP }} sudo inspec --chef-license=accept-silent
+          ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${{ env.PUBIP }} git clone https://github.com/dev-sec/linux-baseline
       
       # Layer 2 Unit Tests
       - name: Layer 2 Test 1 - curl polls
@@ -91,7 +92,7 @@ jobs:
         run: ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${{ env.PUBIP }} sudo docker ps
 
       - name: Layer 2 Test 3 - Example Inspec test of postgres container
-        run: ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${{ env.PUBIP }} sudo inspec exec https://github.com/dev-sec/linux-baseline -t docker://postgres
+        run: ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${{ env.PUBIP }} sudo inspec exec linux-baseline -t docker://postgres
 
       # Layer 3 End to End
       # We need to loop in terratest I think
