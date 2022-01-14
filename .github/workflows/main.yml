@@ -91,7 +91,7 @@ jobs:
         run: ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${{ env.PUBIP }} sudo docker ps
 
       - name: Layer 2 Test 3 - Example Inspec test of postgres container
-        run: ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${{ env.PUBIP }} inspec exec https://github.com/dev-sec/linux-baseline -t docker://postgres
+        run: ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${{ env.PUBIP }} sudo inspec exec https://github.com/dev-sec/linux-baseline -t docker://postgres
 
       # Layer 3 End to End
       # We need to loop in terratest I think
