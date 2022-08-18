@@ -120,11 +120,11 @@ jobs:
         uses: actions/checkout@v1
         with:
           fetch-depth: 1
-      - name: Layer 3 Test 2 - Check Terratest
+      - name: Layer 4 Test 2 - Check Terratest
         uses: fac/terratest-github-action@master
         with:
           SSH_PRIV_KEY: key/id_rsa
-        env:
+      # env:
           # AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           # AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }} 
       # End -- Teardown environment
