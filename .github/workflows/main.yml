@@ -116,21 +116,17 @@ jobs:
         run: ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${{ env.PUBIP }} sudo inspec exec linux-baseline -t docker://postgres
 
       # Layer 3 End to End
-      # We need to loop in terratest I think
-        name: Layer 3 - Terratest
-        runs-on: ubuntu-latest
-        steps:
-          - name: Layer 3 Test 1 - Install Terratest
-            uses: actions/checkout@v1
-            with:
-              fetch-depth: 1
-          - name: test execution step
-            uses: fac/terratest-github-action@master
-            with:
-              SSH_PRIV_KEY: key/id_rsa
-            env:
-              # AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-              # AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }} 
+      - name: Layer 3 Test 1 - Install Terratest
+        uses: actions/checkout@v1
+        with:
+          fetch-depth: 1
+      - name: Layer 3 Test 2 - Check Terratest
+        uses: fac/terratest-github-action@master
+        with:
+          SSH_PRIV_KEY: key/id_rsa
+        env:
+          # AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          # AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }} 
       # End -- Teardown environment
       - name: Teardown
         if: always()
