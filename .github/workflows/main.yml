@@ -16,6 +16,8 @@ on:
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   # This workflow contains a single job called "build"
+  # outputs:
+  #   PUBIP: ${{ steps.step1.outputs.PUBIP }}
   build:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
@@ -51,9 +53,12 @@ jobs:
       # Is this where we start with inspec?
         
       - name: Build Stack
+        id: step1
         run: | 
           make auto-apply ENV=openstack
           echo "PUBIP=$(make get-public-ip ENV=openstack)" >> $GITHUB_ENV
+          # echo "::set-output name=PUBIP::$(make get-public-ip ENV=openstack)"
+        
  
       # Install Inspec on remote server
       # May need to find a better way to install ruby, but rbenv is installed local to the user so...
