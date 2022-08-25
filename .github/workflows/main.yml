@@ -124,10 +124,9 @@ jobs:
         uses: fac/terratest-github-action@master
         env:
           SSH_KEY: "$(cat key/id_rsa)"
+          SUPER_SECRET: ${{ secrets.OPENSTACK_CONFIG }}
         with:
                 SSH_PRIV_KEY: ${{ env.SSH_KEY }}
-        env:
-          SUPER_SECRET: ${{ secrets.OPENSTACK_CONFIG }}
       # env:
           # AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           # AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }} 
