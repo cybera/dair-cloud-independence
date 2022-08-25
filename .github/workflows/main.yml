@@ -20,9 +20,6 @@ jobs:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
 
-    env: 
-      PUBIP: $(make get-public-ip ENV=openstack)
-
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
@@ -56,9 +53,10 @@ jobs:
       - name: Build Stack
         run: | 
           make auto-apply ENV=openstack
-          echo "PUBIP=$(make get-public-ip ENV=openstack)" >> $GITHUB_ENV
+          # echo "PUBIP=$(make get-public-ip ENV=openstack)" >> $GITHUB_ENV
           
-      
+      env: 
+        PUBIP: $(make get-public-ip ENV=openstack)
       # Install Inspec on remote server
       # May need to find a better way to install ruby, but rbenv is installed local to the user so...
       - name: Build Stack - Install Inspec on remote host
@@ -77,11 +75,11 @@ jobs:
           ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${{ env.PUBIP }} sudo ln -s /usr/share/rvm/rubies/ruby-2.7.2/bin/ruby /usr/local/bin/ruby
 
       # Layer 2 tests start
-      - name: Layer 2 Test 1 - curl polls
-        run: curl -q http://${{ env.PUBIP }}/polls/
+      # - name: Layer 2 Test 1 - curl polls
+      #   run: curl -q http://${{ env.PUBIP }}/polls/
 
-      - name: Layer 2 Test 2 - Check running docker containers
-        run: ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${{ env.PUBIP }} sudo docker ps
+      # - name: Layer 2 Test 2 - Check running docker containers
+      #   run: ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${{ env.PUBIP }} sudo docker ps
 
       # Installing Inspec seperatly because it crashes
       - name: Build Stack - Finish installing Inspec
@@ -130,6 +128,8 @@ jobs:
           SSH_KEY: "$(cat key/id_rsa)"
         with:
                 SSH_PRIV_KEY: ${{ env.SSH_KEY }}
+        env:
+          SUPER_SECRET: ${{ secrets.OPENSTACK_CONFIG }}
       # env:
           # AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           # AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }} 
