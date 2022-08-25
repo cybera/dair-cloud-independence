@@ -53,13 +53,11 @@ jobs:
       - name: Build Stack
         run: | 
           make auto-apply ENV=openstack
-          # echo "PUBIP=$(make get-public-ip ENV=openstack)" >> $GITHUB_ENV
+          echo "PUBIP=$(make get-public-ip ENV=openstack)" >> $GITHUB_ENV
  
       # Install Inspec on remote server
       # May need to find a better way to install ruby, but rbenv is installed local to the user so...
       - name: Build Stack - Install Inspec on remote host
-        env:
-          PUBIP: "$(make get-public-ip ENV=openstack)"
         run: |
           ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${{ env.PUBIP }} sudo apt-get update
           ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${{ env.PUBIP }} sudo apt-get -y install software-properties-common
