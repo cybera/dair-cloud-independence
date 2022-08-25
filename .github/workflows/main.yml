@@ -53,10 +53,10 @@ jobs:
       - name: Build Stack
         run: | 
           make auto-apply ENV=openstack
-          echo "PUBIP=$(make get-public-ip ENV=openstack)" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf8 -Append
-          echo "SSH_KEY=$(cat key/id_rsa)" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf8 -Append
-          # echo "PUBIP=$(make get-public-ip ENV=openstack)" >> $GITHUB_ENV
+          echo "PUBIP=$(make get-public-ip ENV=openstack)" >> $GITHUB_ENV
           # echo "SSH_KEY=$(cat key/id_rsa)" >> $GITHUB_ENV
+        env:
+                SSH_KEY: "$(cat key/id_rsa)"
       
       # Install Inspec on remote server
       # May need to find a better way to install ruby, but rbenv is installed local to the user so...
