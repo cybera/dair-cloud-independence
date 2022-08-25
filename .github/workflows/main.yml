@@ -53,71 +53,68 @@ jobs:
       - name: Build Stack
         run: | 
           make auto-apply ENV=openstack
-          # echo "PUBIP=$(make get-public-ip ENV=openstack)" >> $GITHUB_ENV
-          echo "SSH_KEY=$(cat key/id_rsa)"
-        env:
-                SSH_KEY: "$(cat key/id_rsa)"
-                PUBIP: "$(make get-public-ip ENV=openstack)"
+          echo "PUBIP=$(make get-public-ip ENV=openstack)" >> $GITHUB_ENV
+          
       
       # Install Inspec on remote server
       # May need to find a better way to install ruby, but rbenv is installed local to the user so...
       - name: Build Stack - Install Inspec on remote host
         run: |
-          ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${env.PUBIP} sudo apt-get update
-          ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${env.PUBIP} sudo apt-get -y install software-properties-common
-          #ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${env.PUBIP} sudo gpg --keyserver hkp://pool.sks-keyservers.net --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3 7D2BAF1CF37B13E2069D6956105BD0E739499BDB
-          ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${env.PUBIP} sudo apt-add-repository -y ppa:rael-gc/rvm
-          ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${env.PUBIP} sudo apt-get update
-          ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${env.PUBIP} sudo apt-get install -y rvm
-          ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${env.PUBIP} sudo usermod -a -G rvm ubuntu
-          ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${env.PUBIP} /usr/share/rvm/bin/rvm user gemsets
-          ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${env.PUBIP} /usr/share/rvm/bin/rvm install ruby 2.7
+          ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${env.PUBIP }} sudo apt-get update
+          ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${{ env.PUBIP }} sudo apt-get -y install software-properties-common
+          #ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${{ env.PUBIP }} sudo gpg --keyserver hkp://pool.sks-keyservers.net --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3 7D2BAF1CF37B13E2069D6956105BD0E739499BDB
+          ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${{ env.PUBIP }} sudo apt-add-repository -y ppa:rael-gc/rvm
+          ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${{ env.PUBIP }} sudo apt-get update
+          ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${{ env.PUBIP }} sudo apt-get install -y rvm
+          ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${{ env.PUBIP }} sudo usermod -a -G rvm ubuntu
+          ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${{ env.PUBIP }} /usr/share/rvm/bin/rvm user gemsets
+          ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${{ env.PUBIP }} /usr/share/rvm/bin/rvm install ruby 2.7
           # Below line should be safe as long as 2.7/2 is the default 2.7, but is a source of breakage
-          ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${env.PUBIP} sudo ln -s /usr/share/rvm/rubies/ruby-2.7.2/bin/gem /usr/local/bin/gem
-          ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${env.PUBIP} sudo ln -s /usr/share/rvm/rubies/ruby-2.7.2/bin/ruby /usr/local/bin/ruby
+          ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${{ env.PUBIP }} sudo ln -s /usr/share/rvm/rubies/ruby-2.7.2/bin/gem /usr/local/bin/gem
+          ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${{ env.PUBIP }} sudo ln -s /usr/share/rvm/rubies/ruby-2.7.2/bin/ruby /usr/local/bin/ruby
 
       # Layer 2 tests start
       - name: Layer 2 Test 1 - curl polls
-        run: curl -q http://${env.PUBIP}/polls/
+        run: curl -q http://${{ env.PUBIP }}/polls/
 
       - name: Layer 2 Test 2 - Check running docker containers
-        run: ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${env.PUBIP} sudo docker ps
+        run: ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${{ env.PUBIP }} sudo docker ps
 
       # Installing Inspec seperatly because it crashes
       - name: Build Stack - Finish installing Inspec
-        #run: ssh -o ServerAliveInterval=30 -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${env.PUBIP} "sh -c 'nohup sudo gem install inspec > /dev/null 2>&1 &'"
+        #run: ssh -o ServerAliveInterval=30 -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${{ env.PUBIP }} "sh -c 'nohup sudo gem install inspec > /dev/null 2>&1 &'"
         run: | 
-          ssh -o ServerAliveInterval=30 -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${env.PUBIP} sudo gem install inspec
-          ssh -o ServerAliveInterval=30 -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${env.PUBIP} sudo gem install inspec-bin
-          ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${env.PUBIP} sudo ln -s /usr/share/rvm/rubies/ruby-2.7.2/bin/inspec /usr/local/bin/inspec
-          ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${env.PUBIP} sudo ln -s /usr/share/rvm/rubies/ruby-2.7.2/bin/ruby_executable_hooks /usr/local/bin/ruby_executable_hooks
-          ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${env.PUBIP} sudo inspec --chef-license=accept-silent
-          ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${env.PUBIP} git clone https://github.com/dev-sec/linux-baseline
+          ssh -o ServerAliveInterval=30 -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${{ env.PUBIP }} sudo gem install inspec
+          ssh -o ServerAliveInterval=30 -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${{ env.PUBIP }} sudo gem install inspec-bin
+          ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${{ env.PUBIP }} sudo ln -s /usr/share/rvm/rubies/ruby-2.7.2/bin/inspec /usr/local/bin/inspec
+          ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${{ env.PUBIP }} sudo ln -s /usr/share/rvm/rubies/ruby-2.7.2/bin/ruby_executable_hooks /usr/local/bin/ruby_executable_hooks
+          ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${{ env.PUBIP }} sudo inspec --chef-license=accept-silent
+          ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${{ env.PUBIP }} git clone https://github.com/dev-sec/linux-baseline
       
       # Layer 2 Unit Tests cont. but with more Inspec!
       - name: Layer 2 Test 3 - InSpect local system
         continue-on-error: true
-        run: ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${env.PUBIP} sudo inspec exec linux-baseline
+        run: ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${{ env.PUBIP }} sudo inspec exec linux-baseline
 
       - name: Layer 2 Test 4 - InSpect sensu-backend Container
         continue-on-error: true
-        run: ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${env.PUBIP} sudo inspec exec linux-baseline -t docker://sensu-backend
+        run: ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${{ env.PUBIP }} sudo inspec exec linux-baseline -t docker://sensu-backend
         
       - name: Layer 2 Test 5 - InSpect grafana Container
         continue-on-error: true
-        run: ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${env.PUBIP} sudo inspec exec linux-baseline -t docker://grafana
+        run: ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${{ env.PUBIP }} sudo inspec exec linux-baseline -t docker://grafana
 
       - name: Layer 2 Test 6 - InSpect app Container
         continue-on-error: true
-        run: ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${env.PUBIP} sudo inspec exec linux-baseline -t docker://app
+        run: ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${{ env.PUBIP }} sudo inspec exec linux-baseline -t docker://app
         
       - name: Layer 2 Test 7 - InSpect nginx Container
         continue-on-error: true
-        run: ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${env.PUBIP} sudo inspec exec linux-baseline -t docker://nginx
+        run: ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${{ env.PUBIP }} sudo inspec exec linux-baseline -t docker://nginx
         
       - name: Layer 2 Test 8 - InSpect Postgres Container
         continue-on-error: true
-        run: ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${env.PUBIP} sudo inspec exec linux-baseline -t docker://postgres
+        run: ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${{ env.PUBIP }} sudo inspec exec linux-baseline -t docker://postgres
 
       # Layer 3 End to End
       - name: Layer 3 Test 1 - Install Terratest
@@ -126,8 +123,10 @@ jobs:
           fetch-depth: 1
       - name: Layer 4 Test 2 - Check Terratest
         uses: fac/terratest-github-action@master
+        env:
+          SSH_KEY: "$(cat key/id_rsa)"
         with:
-                SSH_PRIV_KEY: ${env.SSH_KEY}
+                SSH_PRIV_KEY: ${{ SSH_KEY }}
       # env:
           # AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           # AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }} 
