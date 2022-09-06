@@ -60,7 +60,7 @@ jobs:
           chomod -r 400 ~/.ssh
           echo "Host django" > ~/.ssh/config 
           echo " Hostname $(make get-public-ip ENV=openstack)" >> ~/.ssh/config
-          echo " User ubuntu" >> ~/.ssh/config
+          echo " User ubuntu" >> ~/.ssh/config 
           echo " IdentityFile key/id_rsa" >> ~/.ssh/config
           echo " StrictHostKeyChecking no"  >> ~/.ssh/config
           # echo "PUBIP=$(make get-public-ip ENV=openstack)" >> $GITHUB_ENV
