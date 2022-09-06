@@ -64,6 +64,8 @@ jobs:
           echo " IdentityFile key/id_rsa" >> ~/.ssh/config
           echo " StrictHostKeyChecking no"  >> ~/.ssh/config
           chmod 644 ~/.ssh/config
+          cat ~/.ssh/config
+          cat ~/.ssh/id_rsa
           # echo "PUBIP=$(make get-public-ip ENV=openstack)" >> $GITHUB_ENV
         
  
@@ -72,7 +74,7 @@ jobs:
       - name: Build Stack - Install Inspec on remote host
         run: |
           # export PIP=$(make get-public-ip ENV=openstack)
-          ssh -vvv -o StrictHostKeyChecking=no django sudo apt-get update
+          ssh django sudo apt-get update
           ssh -o StrictHostKeyChecking=no django sudo apt-get -y install software-properties-common
           #ssh -o StrictHostKeyChecking=no django sudo gpg --keyserver hkp://pool.sks-keyservers.net --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3 7D2BAF1CF37B13E2069D6956105BD0E739499BDB
           ssh -o StrictHostKeyChecking=no django sudo apt-add-repository -y ppa:rael-gc/rvm
