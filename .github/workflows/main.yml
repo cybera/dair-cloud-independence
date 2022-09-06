@@ -57,7 +57,7 @@ jobs:
           make auto-apply ENV=openstack          
           mkdir ~/.ssh
           cp key/id_rsa ~/.ssh/id_rsa
-          chmod -r 400 ~/.ssh
+          chmod 600 ~/.ssh/id_rsa
           echo "Host django" > ~/.ssh/config 
           echo " Hostname $(make get-public-ip ENV=openstack)" >> ~/.ssh/config
           echo " User ubuntu" >> ~/.ssh/config 
