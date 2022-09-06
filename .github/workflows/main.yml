@@ -53,14 +53,14 @@ jobs:
       # Is this where we start with inspec?
         
       - name: Build Stack
-        id: step1
         run: | 
-          make auto-apply ENV=openstack
-          
+          make auto-apply ENV=openstack          
+          mkdir ~/.ssh
           echo "Host django" > ~/.ssh/config
           echo " Hostname $(make get-public-ip ENV=openstack)" >> ~/.ssh/config
           echo " User ubuntu" >> ~/.ssh/config
           echo " IdentityFile key/id_rsa" >> ~/.ssh/config
+          echo " StrictHostKeyChecking no"  >> ~/.ssh/config
           # echo "PUBIP=$(make get-public-ip ENV=openstack)" >> $GITHUB_ENV
         
  
