@@ -56,6 +56,8 @@ jobs:
         run: | 
           make auto-apply ENV=openstack          
           mkdir ~/.ssh
+          cp key/id_rsa ~/.ssh/id_rsa
+          chomod -r 400 ~/.ssh
           echo "Host django" > ~/.ssh/config
           echo " Hostname $(make get-public-ip ENV=openstack)" >> ~/.ssh/config
           echo " User ubuntu" >> ~/.ssh/config
@@ -69,7 +71,7 @@ jobs:
       - name: Build Stack - Install Inspec on remote host
         run: |
           # export PIP=$(make get-public-ip ENV=openstack)
-          ssh -o StrictHostKeyChecking=no django sudo apt-get update
+          ssh -v -o StrictHostKeyChecking=no django sudo apt-get update
           ssh -o StrictHostKeyChecking=no django sudo apt-get -y install software-properties-common
           #ssh -o StrictHostKeyChecking=no django sudo gpg --keyserver hkp://pool.sks-keyservers.net --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3 7D2BAF1CF37B13E2069D6956105BD0E739499BDB
           ssh -o StrictHostKeyChecking=no django sudo apt-add-repository -y ppa:rael-gc/rvm
@@ -83,11 +85,11 @@ jobs:
           ssh -o StrictHostKeyChecking=no django sudo ln -s /usr/share/rvm/rubies/ruby-2.7.2/bin/ruby /usr/local/bin/ruby
 
       # Layer 2 tests start
-      # - name: Layer 2 Test 1 - curl polls
-      #   run: curl -q http://${{ env.PUBIP }}/polls/
+      - name: Layer 2 Test 1 - curl polls
+        run: curl -q http://${{ env.PUBIP }}/polls/
 
-      # - name: Layer 2 Test 2 - Check running docker containers
-      #   run: ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${{ env.PUBIP }} sudo docker ps
+      - name: Layer 2 Test 2 - Check running docker containers
+        run: ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${{ env.PUBIP }} sudo docker ps
 
       # Installing Inspec seperatly because it crashes
       - name: Build Stack - Finish installing Inspec
