@@ -16,8 +16,7 @@ on:
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   # This workflow contains a single job called "build"
-  # outputs:
-  #   PUBIP: ${{ steps.step1.outputs.PUBIP }}
+
   build:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
@@ -47,14 +46,22 @@ jobs:
         run: make plan ENV=openstack
         
       # Check syntax in apps/docker_files -- Just the docker_compose.yml?
+      - name: Layer 1 Test 2.1 - Validate "app" Docker Files
+        uses: ghe-actions/dockerfile-validator@v1
+        with: 
+          dockerfile: 'apps/docker_files/app/Dockerfile'
+
+      - name: Layer 1 Test 2.2 - Validate "grafana" Docker Files
+        uses: ghe-actions/dockerfile-validator@v1
+        with: 
+          dockerfile: 'apps/docker_files/sensu-agent/Dockerfile'
       
       # Can we check requirements, code, packages, etc for best practices?
-      
-      # Is this where we start with inspec?
         
+      # Run Terraform and set up ssh config file
       - name: Build Stack
         run: | 
-          make auto-apply ENV=openstack          
+          make auto-apply ENV=openstack        
           mkdir ~/.ssh
           cp key/id_rsa ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
@@ -64,28 +71,13 @@ jobs:
           echo " IdentityFile ~/.ssh/id_rsa" >> ~/.ssh/config
           echo " StrictHostKeyChecking no"  >> ~/.ssh/config
           chmod 644 ~/.ssh/config
-          cat ~/.ssh/config
-          cat ~/.ssh/id_rsa
-          # echo "PUBIP=$(make get-public-ip ENV=openstack)" >> $GITHUB_ENV
         
  
       # Install Inspec on remote server
       # May need to find a better way to install ruby, but rbenv is installed local to the user so...
       - name: Build Stack - Install Inspec on remote host
         run: |
-          # export PIP=$(make get-public-ip ENV=openstack)
-          ssh django sudo apt-get update
-          ssh -o StrictHostKeyChecking=no django sudo apt-get -y install software-properties-common
-          #ssh -o StrictHostKeyChecking=no django sudo gpg --keyserver hkp://pool.sks-keyservers.net --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3 7D2BAF1CF37B13E2069D6956105BD0E739499BDB
-          ssh -o StrictHostKeyChecking=no django sudo apt-add-repository -y ppa:rael-gc/rvm
-          ssh -o StrictHostKeyChecking=no django sudo apt-get update
-          ssh -o StrictHostKeyChecking=no django sudo apt-get install -y rvm
-          ssh -o StrictHostKeyChecking=no django sudo usermod -a -G rvm ubuntu
-          ssh -o StrictHostKeyChecking=no django /usr/share/rvm/bin/rvm user gemsets
-          ssh -o StrictHostKeyChecking=no django /usr/share/rvm/bin/rvm install ruby 2.7
-          # Below line should be safe as long as 2.7/2 is the default 2.7, but is a source of breakage
-          ssh -o StrictHostKeyChecking=no django sudo ln -s /usr/share/rvm/rubies/ruby-2.7.2/bin/gem /usr/local/bin/gem
-          ssh -o StrictHostKeyChecking=no django sudo ln -s /usr/share/rvm/rubies/ruby-2.7.2/bin/ruby /usr/local/bin/ruby
+          ssh django sudo bash apps/install_inspec.sh
 
       # Layer 2 tests start
       - name: Layer 2 Test 1 - curl polls
@@ -141,10 +133,8 @@ jobs:
           SSH_KEY: "$(cat key/id_rsa)"
           SUPER_SECRET: ${{ secrets.OPENSTACK_CONFIG }}
         with:
-                SSH_PRIV_KEY: ${{ env.SSH_KEY }}
-      # env:
-          # AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          # AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }} 
+          SSH_KEY: ${{ env.SSH_KEY }}
+
       # End -- Teardown environment
       - name: Teardown
         if: always()
