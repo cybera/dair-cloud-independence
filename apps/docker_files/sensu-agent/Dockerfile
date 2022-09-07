@@ -7,7 +7,7 @@ RUN [ "/bin/bash", "-c", "set -o pipefail \
   && curl -sSf "https://packagecloud.io/install/repositories/sensu/stable/config_file.list?os=$(lsb_release -si | awk '{ print tolower($1) }')&dist=$(lsb_release -sc)&source=script" > /etc/apt/sources.list.d/sensu_stable.list \
   && curl -L "https://packagecloud.io/sensu/stable/gpgkey" 2> /dev/null | apt-key add -  \
   && apt-get -qq update \
-  && apt-get install -y --no-install-recommends sensu-go-agent libpq5\
+  && apt-get install -y --no-install-recommends sensu-go-agent libpq5 \
   && rm -rf /var/lib/apt/lists/* " ]
 
 # Override SUBSCRIPTIONS
