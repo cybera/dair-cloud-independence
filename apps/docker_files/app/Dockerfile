@@ -8,7 +8,6 @@ WORKDIR /src
 
 COPY requirements.txt ./
 RUN apt-get -qq update \
-  && DEBIAN_FRONTEND=noninteractive apt-get -qq -y upgrade \
   && apt-get install -y --no-install-recommends  python3-pip python3-dev python3-setuptools \
   && apt-get -y clean all \
   && pip3 install -U pip \
