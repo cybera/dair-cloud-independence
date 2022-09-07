@@ -52,11 +52,11 @@ jobs:
           dockerfile: 'apps/docker_files/app/Dockerfile'
           lint: 'hadolint'
 
-     # - name: Layer 1 Test 2.2 - Validate "grafana" Docker Files
-     #   uses: ghe-actions/dockerfile-validator@v1
-     #   with: 
-     #     dockerfile: 'apps/docker_files/sensu-agent/Dockerfile'
-     #     lint: 'hadolint'
+      - name: Layer 1 Test 2.2 - Validate "grafana" Docker Files
+        uses: ghe-actions/dockerfile-validator@v1
+        with: 
+          dockerfile: 'apps/docker_files/sensu-agent/Dockerfile'
+          lint: 'hadolint'
       
       # Can we check requirements, code, packages, etc for best practices?
       # ^ This can be done with Dependabot - adding to instruction document
@@ -86,46 +86,46 @@ jobs:
 
       # Layer 2 tests start
       - name: Layer 2 Test 1 - curl polls
-        run: curl -q http://${{ env.PUBIP }}/polls/
+        run: curl -q http://localhost/polls/
 
       - name: Layer 2 Test 2 - Check running docker containers
-        run: ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${{ env.PUBIP }} sudo docker ps
+        run: ssh django sudo docker ps
 
       # Installing Inspec seperatly because it crashes
       - name: Build Stack - Finish installing Inspec
-        #run: ssh -o ServerAliveInterval=30 -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${{ env.PUBIP }} "sh -c 'nohup sudo gem install inspec > /dev/null 2>&1 &'"
+        #run: ssh -o ServerAliveInterval=30  django "sh -c 'nohup sudo gem install inspec > /dev/null 2>&1 &'"
         run: | 
-          ssh -o ServerAliveInterval=30 -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${{ env.PUBIP }} sudo gem install inspec
-          ssh -o ServerAliveInterval=30 -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${{ env.PUBIP }} sudo gem install inspec-bin
-          ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${{ env.PUBIP }} sudo ln -s /usr/share/rvm/rubies/ruby-2.7.2/bin/inspec /usr/local/bin/inspec
-          ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${{ env.PUBIP }} sudo ln -s /usr/share/rvm/rubies/ruby-2.7.2/bin/ruby_executable_hooks /usr/local/bin/ruby_executable_hooks
-          ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${{ env.PUBIP }} sudo inspec --chef-license=accept-silent
-          ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${{ env.PUBIP }} git clone https://github.com/dev-sec/linux-baseline
+          ssh -o ServerAliveInterval=30 django sudo gem install inspec
+          ssh -o ServerAliveInterval=30 django sudo gem install inspec-bin
+          ssh django sudo ln -s /usr/share/rvm/rubies/ruby-2.7.2/bin/inspec /usr/local/bin/inspec
+          ssh django sudo ln -s /usr/share/rvm/rubies/ruby-2.7.2/bin/ruby_executable_hooks /usr/local/bin/ruby_executable_hooks
+          ssh django sudo inspec --chef-license=accept-silent
+          ssh django git clone https://github.com/dev-sec/linux-baseline
       
       # Layer 2 Unit Tests cont. but with more Inspec!
       - name: Layer 2 Test 3 - InSpect local system
         continue-on-error: true
-        run: ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${{ env.PUBIP }} sudo inspec exec linux-baseline
+        run: ssh django sudo inspec exec linux-baseline
 
       - name: Layer 2 Test 4 - InSpect sensu-backend Container
         continue-on-error: true
-        run: ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${{ env.PUBIP }} sudo inspec exec linux-baseline -t docker://sensu-backend
+        run: ssh django sudo inspec exec linux-baseline -t docker://sensu-backend
         
       - name: Layer 2 Test 5 - InSpect grafana Container
         continue-on-error: true
-        run: ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${{ env.PUBIP }} sudo inspec exec linux-baseline -t docker://grafana
+        run: ssh django sudo inspec exec linux-baseline -t docker://grafana
 
       - name: Layer 2 Test 6 - InSpect app Container
         continue-on-error: true
-        run: ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${{ env.PUBIP }} sudo inspec exec linux-baseline -t docker://app
+        run: ssh django sudo inspec exec linux-baseline -t docker://app
         
       - name: Layer 2 Test 7 - InSpect nginx Container
         continue-on-error: true
-        run: ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${{ env.PUBIP }} sudo inspec exec linux-baseline -t docker://nginx
+        run: ssh django sudo inspec exec linux-baseline -t docker://nginx
         
       - name: Layer 2 Test 8 - InSpect Postgres Container
         continue-on-error: true
-        run: ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${{ env.PUBIP }} sudo inspec exec linux-baseline -t docker://postgres
+        run: ssh django sudo inspec exec linux-baseline -t docker://postgres
 
       # Layer 3 End to End
       - name: Layer 3 Test 1 - Install Terratest
