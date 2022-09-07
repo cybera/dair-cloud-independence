@@ -49,7 +49,7 @@ jobs:
       - name: Layer 4 Test 2 - Check Terratest
         uses: fac/terratest-github-action@master
         with:
-          SSH_PRIV_KEY: key/id_rsa
+          SSH_PRIV_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
           
       # End -- Teardown environment
       - name: Teardown
