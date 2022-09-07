@@ -46,16 +46,22 @@ jobs:
         run: make plan ENV=openstack
         
       # Check syntax in apps/docker_files -- Just the docker_compose.yml?
-      - name: Layer 1 Test 2.1 - Validate "app" Docker Files
+      - name: Layer 1 Test 2 - Validate "app" Docker Files
         uses: ghe-actions/dockerfile-validator@v1
         with: 
           dockerfile: 'apps/docker_files/app/Dockerfile'
           lint: 'hadolint'
 
-      - name: Layer 1 Test 2.2 - Validate "grafana" Docker Files
+      - name: Layer 1 Test 3 - Validate "grafana" Docker Files
         uses: ghe-actions/dockerfile-validator@v1
         with: 
           dockerfile: 'apps/docker_files/sensu-agent/Dockerfile'
+          lint: 'hadolint'
+      
+      - name: Layer 1 Test 4 - Validate "jenkins" Docker Files
+        uses: ghe-actions/dockerfile-validator@v1
+        with: 
+          dockerfile: 'Dockerfile'
           lint: 'hadolint'
       
       # Can we check requirements, code, packages, etc for best practices?
