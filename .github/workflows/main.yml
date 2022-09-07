@@ -29,8 +29,8 @@ jobs:
       # Runs a single command using the runners shell
       - name: Install curl and other dependencies
         run: |
-          sudo apt-get update
-          sudo apt-get install -y curl
+          # sudo apt-get update
+          # sudo apt-get install -y curl
           make create-sshkey
 
       # Runs a set of commands using the runners shell
@@ -45,106 +45,12 @@ jobs:
       - name: Layer 1 Test 1 - make plan Terraform syntax checks
         run: make plan ENV=openstack
         
-      # Check syntax in apps/docker_files -- Just the docker_compose.yml?
-      - name: Layer 1 Test 2 - Validate "app" Docker Files
-        uses: ghe-actions/dockerfile-validator@v1
-        with: 
-          dockerfile: 'apps/docker_files/app/Dockerfile'
-          lint: 'hadolint'
-
-      - name: Layer 1 Test 3 - Validate "grafana" Docker Files
-        uses: ghe-actions/dockerfile-validator@v1
-        with: 
-          dockerfile: 'apps/docker_files/sensu-agent/Dockerfile'
-          lint: 'hadolint'
       
-      - name: Layer 1 Test 4 - Validate "jenkins" Docker Files
-        uses: ghe-actions/dockerfile-validator@v1
-        with: 
-          dockerfile: 'Dockerfile'
-          lint: 'hadolint'
-      
-      # Can we check requirements, code, packages, etc for best practices?
-      # ^ This can be done with Dependabot - adding to instruction document
-        
-      # Run Terraform and set up ssh config file
-      - name: Build Stack
-        run: | 
-          make auto-apply ENV=openstack        
-          mkdir ~/.ssh
-          cp key/id_rsa ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          echo "Host django" > ~/.ssh/config 
-          echo " Hostname $(make get-public-ip ENV=openstack)" | tr -d '"' >> ~/.ssh/config
-          echo " User ubuntu" >> ~/.ssh/config 
-          echo " IdentityFile ~/.ssh/id_rsa" >> ~/.ssh/config
-          echo " StrictHostKeyChecking no"  >> ~/.ssh/config
-          echo " ConnectionAttempts 5" >> ~/.ssh/config
-          echo " ConnectTimeout 10" >> ~/.ssh/config
-          chmod 644 ~/.ssh/config
-        
- 
-      # Install Inspec on remote server
-      # May need to find a better way to install ruby, but rbenv is installed local to the user so...
-      - name: Build Stack - Install Inspec on remote host
-        run: |
-          ssh django bash apps/install_inspec.sh
-
-      # Layer 2 tests start
-      - name: Layer 2 Test 1 - curl polls
-        run: curl -q http://$(make get-public-ip ENV=openstack | tr -d '"' )/polls/
-
-      - name: Layer 2 Test 2 - Check running docker containers
-        run: ssh django sudo docker ps
-
-      # Installing Inspec seperatly because it crashes
-      - name: Build Stack - Finish installing Inspec
-        #run: ssh -o ServerAliveInterval=30  django "sh -c 'nohup sudo gem install inspec > /dev/null 2>&1 &'"
-        run: | 
-          ssh -o ServerAliveInterval=30 django sudo gem install inspec
-          ssh -o ServerAliveInterval=30 django sudo gem install inspec-bin
-          ssh django sudo ln -s /usr/share/rvm/rubies/ruby-2.7.2/bin/inspec /usr/local/bin/inspec
-          ssh django sudo ln -s /usr/share/rvm/rubies/ruby-2.7.2/bin/ruby_executable_hooks /usr/local/bin/ruby_executable_hooks
-          ssh django sudo inspec --chef-license=accept-silent
-          ssh django git clone https://github.com/dev-sec/linux-baseline
-      
-      # Layer 2 Unit Tests cont. but with more Inspec!
-      - name: Layer 2 Test 3 - InSpect local system
-        continue-on-error: true
-        run: ssh django sudo inspec exec linux-baseline
-
-      - name: Layer 2 Test 4 - InSpect sensu-backend Container
-        continue-on-error: true
-        run: ssh django sudo inspec exec linux-baseline -t docker://sensu-backend
-        
-      - name: Layer 2 Test 5 - InSpect grafana Container
-        continue-on-error: true
-        run: ssh django sudo inspec exec linux-baseline -t docker://grafana
-
-      - name: Layer 2 Test 6 - InSpect app Container
-        continue-on-error: true
-        run: ssh django sudo inspec exec linux-baseline -t docker://app
-        
-      - name: Layer 2 Test 7 - InSpect nginx Container
-        continue-on-error: true
-        run: ssh django sudo inspec exec linux-baseline -t docker://nginx
-        
-      - name: Layer 2 Test 8 - InSpect Postgres Container
-        continue-on-error: true
-        run: ssh django sudo inspec exec linux-baseline -t docker://postgres
-
-      # Layer 3 End to End
-      - name: Layer 3 Test 1 - Install Terratest
-        uses: actions/checkout@v1
-        with:
-          fetch-depth: 1
       - name: Layer 4 Test 2 - Check Terratest
         uses: fac/terratest-github-action@master
         env:
-          SSH_KEY: "$(cat key/id_rsa)"
+          SSH_PRIV_KEY: key/id_rsa
           SUPER_SECRET: ${{ secrets.OPENSTACK_CONFIG }}
-        with:
-          SSH_KEY: ${{ env.SSH_KEY }}
 
       # End -- Teardown environment
       - name: Teardown
