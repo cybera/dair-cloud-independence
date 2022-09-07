@@ -59,7 +59,7 @@ jobs:
           lint: 'hadolint'
       
       # Can we check requirements, code, packages, etc for best practices?
-      # ^ This can be done with Dependabot - adding to 
+      # ^ This can be done with Dependabot - adding to instruction document
         
       # Run Terraform and set up ssh config file
       - name: Build Stack
