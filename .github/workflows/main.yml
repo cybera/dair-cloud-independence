@@ -82,7 +82,7 @@ jobs:
       # May need to find a better way to install ruby, but rbenv is installed local to the user so...
       - name: Build Stack - Install Inspec on remote host
         run: |
-          ssh django sudo bash apps/install_inspec.sh
+          ssh django bash apps/install_inspec.sh
 
       # Layer 2 tests start
       - name: Layer 2 Test 1 - curl polls

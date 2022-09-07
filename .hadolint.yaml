@@ -2,6 +2,7 @@ failure-threshold: error
 ignored:
   - DL3008
   - DL3013
+  - DL4006
 override:
   warning: 
     - DL3005
