@@ -92,7 +92,7 @@ jobs:
 
       # Layer 2 tests start
       - name: Layer 2 Test 1 - curl polls
-        run: curl -q http://$(make get-public-ip ENV=openstack)/polls/
+        run: curl -q http://$(make get-public-ip ENV=openstack | tr -d '"' )/polls/
 
       - name: Layer 2 Test 2 - Check running docker containers
         run: ssh django sudo docker ps

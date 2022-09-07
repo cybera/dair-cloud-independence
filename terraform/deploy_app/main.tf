@@ -15,7 +15,7 @@ resource "null_resource" "copy_files" {
 }
 
 resource "null_resource" "provision_app" {
-  depends_on = ["null_resource.copy_files"]
+  depends_on = null_resource.copy_files
 
   connection {
     user        = "ubuntu"
