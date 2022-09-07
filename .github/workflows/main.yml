@@ -48,10 +48,9 @@ jobs:
       
       - name: Layer 4 Test 2 - Check Terratest
         uses: fac/terratest-github-action@master
-        env:
+        with:
           SSH_PRIV_KEY: key/id_rsa
-          SUPER_SECRET: ${{ secrets.OPENSTACK_CONFIG }}
-
+          
       # End -- Teardown environment
       - name: Teardown
         if: always()
