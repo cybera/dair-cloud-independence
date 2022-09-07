@@ -51,7 +51,6 @@ jobs:
         with: 
           dockerfile: 'apps/docker_files/app/Dockerfile'
           lint: 'hadolint'
-          ignore: 'DL3005', 'DL3008', 'DL3013'
 
       - name: Layer 1 Test 2.2 - Validate "grafana" Docker Files
         uses: ghe-actions/dockerfile-validator@v1
