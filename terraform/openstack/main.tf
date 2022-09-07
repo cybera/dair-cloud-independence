@@ -93,11 +93,11 @@ resource "openstack_compute_floatingip_associate_v2" "public_ip" {
 }
 
 # Deploy the application to the virtual machine
-# module "deploy_app" {
-#  source     = "../deploy_app"
-#  ip_address = "${openstack_compute_floatingip_associate_v2.public_ip.floating_ip}"
-#  ssh_key    = "${file("../../key/id_rsa")}"
-#}
+module "deploy_app" {
+ source     = "../deploy_app"
+ ip_address = "${openstack_compute_floatingip_associate_v2.public_ip.floating_ip}"
+ ssh_key    = "${file("../../key/id_rsa")}"
+}
 
 output "public_ip" {
   value = "${openstack_compute_floatingip_associate_v2.public_ip.floating_ip}"
