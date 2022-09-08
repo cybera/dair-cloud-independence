@@ -10,19 +10,15 @@ on:
   ################################
   # Triggers the workflow on     #
   # push or pull request         #
-  # events but only for the      #
-  # master branch                #
+  # events on the main or master #
+  # or when triggered from the   #
+  # actions tab                  #
   ################################
   push:
     branches: [ master, main ]
   pull_request:
     branches: [ master, main ]
 
-  ################################
-  # Allows you to run this       #
-  # workflow manually from the   #
-  # Actions tab                  #
-  ################################
   workflow_dispatch:
 
 ################################
@@ -60,7 +56,19 @@ jobs:
       - uses: actions/checkout@v2
 
       ################################
-      # Runs a single runner command #
+      # Run Linter against code base #
+      ################################
+      - name: Layer 1 Test 1 - Lint Code Base
+        uses: github/super-linter@v4
+        env:
+          DISABLE_ERRORS: true
+          VALIDATE_ALL_CODEBASE: true
+          DEFAULT_BRANCH: master
+          SUPPRESS_POSSUM: true
+
+      ################################
+      # Set up up your testing       #
+      # environment                  #
       ################################
       - name: Install curl and other dependencies
         run: |
@@ -68,9 +76,6 @@ jobs:
           sudo apt-get install -y curl
           make create-sshkey
 
-      ################################
-      # Runs set of runner commands  #
-      ################################
       - name: Setup env vars and tree
         shell: bash
         env:
@@ -81,30 +86,8 @@ jobs:
       ################################
       # Layer 1 syntax check         #
       ################################
-      - name: Layer 1 Test 1 - make plan Terraform syntax checks
+      - name: Layer 1 Test 2 - make plan Terraform syntax checks
         run: make plan ENV=openstack
-
-      ################################
-      # Check syntax of all files    #  
-      # Might not be needed,         #
-      # commenting it out            #
-      # for testing                  #
-      ################################
-      #- name: Layer 1 Test 2 - checkout 
-      #  uses: actions/checkout@v3
-      #  with:
-      #    fetch-depth: 0
-
-      ################################
-      # Run Linter against code base #
-      ################################
-      - name: Layer 1 Test 2 - Lint Code Base
-        uses: github/super-linter@v4
-        env:
-          DISABLE_ERRORS: true
-          VALIDATE_ALL_CODEBASE: true
-          DEFAULT_BRANCH: master
-          SUPPRESS_POSSUM: true
 
       # Can we check requirements, code, packages, etc for best practices?
       # ^ This can be done with Dependabot - adding to instruction document
@@ -133,9 +116,19 @@ jobs:
       # Install Inspec on            #
       # remote server                #
       ################################
-      - name: Build Stack - Install Inspec on remote host
+      - name: Layer 2 Setup Part 1  - Install Inspec on remote host
         run: |
           ssh django bash apps/install_inspec.sh
+     
+      # Installing Inspec seperatly 
+      - name: Layer 2 Setup Part 2 - Finish installing Inspec
+        run: | 
+          ssh -o ServerAliveInterval=30 django sudo gem install inspec
+          ssh -o ServerAliveInterval=30 django sudo gem install inspec-bin
+          ssh django sudo ln -s /usr/share/rvm/rubies/ruby-2.7.2/bin/inspec /usr/local/bin/inspec
+          ssh django sudo ln -s /usr/share/rvm/rubies/ruby-2.7.2/bin/ruby_executable_hooks /usr/local/bin/ruby_executable_hooks
+          ssh django sudo inspec --chef-license=accept-silent
+          ssh django git clone https://github.com/dev-sec/linux-baseline
 
       ################################ 
       # Layer 2 tests start          #
@@ -146,19 +139,6 @@ jobs:
       - name: Layer 2 Test 2 - Check running docker containers
         run: ssh django sudo docker ps
 
-      ################################
-      # Installing Inspec seperatly  #
-      # because it crashes           #
-      ################################
-      - name: Build Stack - Finish installing Inspec
-        run: | 
-          ssh -o ServerAliveInterval=30 django sudo gem install inspec
-          ssh -o ServerAliveInterval=30 django sudo gem install inspec-bin
-          ssh django sudo ln -s /usr/share/rvm/rubies/ruby-2.7.2/bin/inspec /usr/local/bin/inspec
-          ssh django sudo ln -s /usr/share/rvm/rubies/ruby-2.7.2/bin/ruby_executable_hooks /usr/local/bin/ruby_executable_hooks
-          ssh django sudo inspec --chef-license=accept-silent
-          ssh django git clone https://github.com/dev-sec/linux-baseline
-      
       ################################
       # Layer 2 Unit Tests contiinue # 
       # but with more Inspec!        #
@@ -190,15 +170,16 @@ jobs:
       ################################ 
       # Layer 3 End to End           #
       ################################ 
-      - name: Layer 3 Test 1 - Install Terratest
-        uses: actions/checkout@v1
-        with:
-          fetch-depth: 1
+      - name: Layer 3 Setup - Install Terratest
+        run: |
+          ssh -o ServerAliveInterval=30 django sudo apt-get update \
+          && sudo apt-get install -y golang
+          ssh django sudo cp bin/Linux/terraform /usr/bin/
+          ssh django cd terraform/test && go mod init "TestTerraformBasicExample" && go mod tidy
       
-      - name: Layer 4 Test 2 - Check Terratest
-        uses: fac/terratest-github-action@master
-        with:
-          SSH_PRIV_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+      - name: Layer 3 Test 1 - Run Example Terratest
+        run: |
+          ssh django cd terraform/test && go test -v -timeout 30m
 
       ################################     
       # End -- Teardown environment  #
