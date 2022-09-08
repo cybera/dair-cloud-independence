@@ -174,7 +174,7 @@ jobs:
           scp -r terraform/test django:~/
           scp bin/Linux/terraform django:~/
           ssh -o ServerAliveInterval=30 django sudo apt-get install -y golang
-          ssh django sudo cp ~/terraform /usr/bin/
+          ssh django sudo cp terraform /usr/bin/
           ssh django cd test && go mod init "TestTerraformBasicExample" && go mod tidy
       
       - name: Layer 3 Test 1 - Run Example Terratest
