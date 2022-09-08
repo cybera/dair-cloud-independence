@@ -67,7 +67,7 @@ jobs:
           SUPPRESS_POSSUM: true
 
       ################################
-      # Set up up your testing       #
+      # Set up your testing          #
       # environment                  #
       ################################
       - name: Install curl and other dependencies
@@ -120,11 +120,10 @@ jobs:
         run: |
           ssh django bash apps/install_inspec.sh
      
-      # Installing Inspec seperatly 
       - name: Layer 2 Setup Part 2 - Finish installing Inspec
         run: | 
-          ssh -o ServerAliveInterval=30 django sudo gem install inspec
-          ssh -o ServerAliveInterval=30 django sudo gem install inspec-bin
+          ssh -o ServerAliveInterval=30 django sudo gem install inspec --no-document
+          ssh -o ServerAliveInterval=30 django sudo gem install inspec-bin --no-document
           ssh django sudo ln -s /usr/share/rvm/rubies/ruby-2.7.2/bin/inspec /usr/local/bin/inspec
           ssh django sudo ln -s /usr/share/rvm/rubies/ruby-2.7.2/bin/ruby_executable_hooks /usr/local/bin/ruby_executable_hooks
           ssh django sudo inspec --chef-license=accept-silent
@@ -172,10 +171,10 @@ jobs:
       ################################ 
       - name: Layer 3 Setup - Install Terratest
         run: |
-          ssh -o ServerAliveInterval=30 django sudo apt-get update \
-          && sudo apt-get install -y golang
+          scp -r terraform/test django:~/
+          ssh -o ServerAliveInterval=30 django sudo apt-get install -y golang
           ssh django sudo cp bin/Linux/terraform /usr/bin/
-          ssh django cd terraform/test && go mod init "TestTerraformBasicExample" && go mod tidy
+          ssh django cd test && go mod init "TestTerraformBasicExample" && go mod tidy
       
       - name: Layer 3 Test 1 - Run Example Terratest
         run: |
