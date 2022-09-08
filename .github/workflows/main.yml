@@ -1,39 +1,76 @@
-# This is a basic workflow to help you get started with Actions
+################################
+# This is a basic workflow to  #
+# help you get started         #
+# with Github Actions testing  #
+################################
 
 name: CI
 
-# Controls when the workflow will run
 on:
-  # Triggers the workflow on push or pull request events but only for the master branch
+  ################################
+  # Triggers the workflow on     #
+  # push or pull request         #
+  # events but only for the      #
+  # master branch                #
+  ################################
   push:
-    branches: [ master ]
+    branches: [ master, main ]
   pull_request:
-    branches: [ master ]
+    branches: [ master, main ]
 
-  # Allows you to run this workflow manually from the Actions tab
+  ################################
+  # Allows you to run this       #
+  # workflow manually from the   #
+  # Actions tab                  #
+  ################################
   workflow_dispatch:
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+################################
+# A workflow run is made up of #
+# one or more jobs that can    #
+# run sequentially or in       #
+# parallel                     #
+################################
 jobs:
-  # This workflow contains a single job called "build"
 
+  ################################
+  # This workflow contains a     #
+  # single job called "build"    #
+  ################################
   build:
-    # The type of runner that the job will run on
+
+    ################################
+    # The type of runner that      #
+    # the job will run on          #
+    ################################
     runs-on: ubuntu-latest
 
-    # Steps represent a sequence of tasks that will be executed as part of the job
+    ################################
+    # Steps represent a sequence   #
+    # of tasks that will be        #
+    # executed as part of the job  #
+    ################################
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+
+      ################################
+      # Checks-out your repository   #
+      # under $GITHUB_WORKSPACE, so  #
+      # your job can access it       #
+      ################################
       - uses: actions/checkout@v2
 
-      # Runs a single command using the runners shell
+      ################################
+      # Runs a single runner command #
+      ################################
       - name: Install curl and other dependencies
         run: |
-          # sudo apt-get update
-          # sudo apt-get install -y curl
+          sudo apt-get update
+          sudo apt-get install -y curl
           make create-sshkey
 
-      # Runs a set of commands using the runners shell
+      ################################
+      # Runs set of runner commands  #
+      ################################
       - name: Setup env vars and tree
         shell: bash
         env:
@@ -41,17 +78,131 @@ jobs:
         run: |
           echo "$SUPER_SECRET" >> ./terraform/openstack/main.tf
 
-      # Layer 1 syntax check
+      ################################
+      # Layer 1 syntax check         #
+      ################################
       - name: Layer 1 Test 1 - make plan Terraform syntax checks
         run: make plan ENV=openstack
+
+      ################################
+      # Check syntax of all files    #  
+      # Might not be needed,         #
+      # commenting it out            #
+      # for testing                  #
+      ################################
+      #- name: Layer 1 Test 2 - checkout 
+      #  uses: actions/checkout@v3
+      #  with:
+      #    fetch-depth: 0
+
+      ################################
+      # Run Linter against code base #
+      ################################
+      - name: Layer 1 Test 2 - Lint Code Base
+        uses: github/super-linter@v4
+        env:
+          DISABLE_ERRORS: true
+          VALIDATE_ALL_CODEBASE: true
+          DEFAULT_BRANCH: master
+          SUPPRESS_POSSUM: true
+
+      # Can we check requirements, code, packages, etc for best practices?
+      # ^ This can be done with Dependabot - adding to instruction document
         
+      ################################
+      # Run Terraform and set up     #
+      # ssh config file              #
+      ################################
+      - name: Build Stack
+        run: | 
+          make auto-apply ENV=openstack        
+          mkdir ~/.ssh
+          cp key/id_rsa ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          echo "Host django" > ~/.ssh/config 
+          echo " Hostname $(make get-public-ip ENV=openstack)" | tr -d '"' >> ~/.ssh/config
+          echo " User ubuntu" >> ~/.ssh/config 
+          echo " IdentityFile ~/.ssh/id_rsa" >> ~/.ssh/config
+          echo " StrictHostKeyChecking no"  >> ~/.ssh/config
+          echo " ConnectionAttempts 5" >> ~/.ssh/config
+          echo " ConnectTimeout 10" >> ~/.ssh/config
+          chmod 644 ~/.ssh/config
+        
+ 
+      ################################
+      # Install Inspec on            #
+      # remote server                #
+      ################################
+      - name: Build Stack - Install Inspec on remote host
+        run: |
+          ssh django bash apps/install_inspec.sh
+
+      ################################ 
+      # Layer 2 tests start          #
+      ################################ 
+      - name: Layer 2 Test 1 - curl polls
+        run: curl -q http://$(make get-public-ip ENV=openstack | tr -d '"' )/polls/
+
+      - name: Layer 2 Test 2 - Check running docker containers
+        run: ssh django sudo docker ps
+
+      ################################
+      # Installing Inspec seperatly  #
+      # because it crashes           #
+      ################################
+      - name: Build Stack - Finish installing Inspec
+        run: | 
+          ssh -o ServerAliveInterval=30 django sudo gem install inspec
+          ssh -o ServerAliveInterval=30 django sudo gem install inspec-bin
+          ssh django sudo ln -s /usr/share/rvm/rubies/ruby-2.7.2/bin/inspec /usr/local/bin/inspec
+          ssh django sudo ln -s /usr/share/rvm/rubies/ruby-2.7.2/bin/ruby_executable_hooks /usr/local/bin/ruby_executable_hooks
+          ssh django sudo inspec --chef-license=accept-silent
+          ssh django git clone https://github.com/dev-sec/linux-baseline
+      
+      ################################
+      # Layer 2 Unit Tests contiinue # 
+      # but with more Inspec!        #
+      ################################
+      - name: Layer 2 Test 3 - InSpect local system
+        continue-on-error: true
+        run: ssh django sudo inspec exec linux-baseline
+
+      - name: Layer 2 Test 4 - InSpect sensu-backend Container
+        continue-on-error: true
+        run: ssh django sudo inspec exec linux-baseline -t docker://sensu-backend
+        
+      - name: Layer 2 Test 5 - InSpect grafana Container
+        continue-on-error: true
+        run: ssh django sudo inspec exec linux-baseline -t docker://grafana
+
+      - name: Layer 2 Test 6 - InSpect app Container
+        continue-on-error: true
+        run: ssh django sudo inspec exec linux-baseline -t docker://app
+        
+      - name: Layer 2 Test 7 - InSpect nginx Container
+        continue-on-error: true
+        run: ssh django sudo inspec exec linux-baseline -t docker://nginx
+        
+      - name: Layer 2 Test 8 - InSpect Postgres Container
+        continue-on-error: true
+        run: ssh django sudo inspec exec linux-baseline -t docker://postgres
+
+      ################################ 
+      # Layer 3 End to End           #
+      ################################ 
+      - name: Layer 3 Test 1 - Install Terratest
+        uses: actions/checkout@v1
+        with:
+          fetch-depth: 1
       
       - name: Layer 4 Test 2 - Check Terratest
         uses: fac/terratest-github-action@master
         with:
           SSH_PRIV_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          
-      # End -- Teardown environment
+
+      ################################     
+      # End -- Teardown environment  #
+      ################################
       - name: Teardown
         if: always()
         run: make destroy ENV=openstack
