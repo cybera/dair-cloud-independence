@@ -179,7 +179,7 @@ jobs:
       
       - name: Layer 3 Test 1 - Run Example Terratest
         run: |
-          ssh django cd terraform/test && go test -v -timeout 30m
+          ssh django cd test && go test -v -timeout 30m
 
       ################################     
       # End -- Teardown environment  #
