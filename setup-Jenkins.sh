@@ -2,7 +2,7 @@
 INITPASS='nananaa'
 TESTPASS='goodbye'
 sudo apt-get update
-sudo apt-get install docker.io
+sudo apt-get install -y --no-install-recommends docker.io
 sudo docker build --tag=jenkins .
 sudo docker run -d \
 	-v jenkins_home:/var/jenkins_home \

@@ -20,11 +20,11 @@ DEBIAN_FRONTEND=noninteractive apt-get -qq -y upgrade
 # Install docker and dependencies
 install_docker () {
   echo -e "${GREEN} =====> Installing Docker${NC}"
-  apt-get install -y apt-transport-https ca-certificates curl software-properties-common monitoring-plugins
+  apt-get install -y --no-install-recommends apt-transport-https ca-certificates curl software-properties-common monitoring-plugins
   curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
   echo "deb [arch=amd64] https://download.docker.com/linux/${DISTRIB_ID} ${DISTRIB_CODENAME} stable" > /etc/apt/sources.list.d/docker.list
   apt-get -qq update > /dev/null
-  apt-get install -y docker-ce
+  apt-get install -y --no-install-recommends docker-ce
 }
 
 # Install Docker Machine (15)
@@ -132,7 +132,7 @@ install_metrics() {
   echo "deb https://repos.influxdata.com/${DISTRIB_ID} ${DISTRIB_CODENAME} stable" | tee /etc/apt/sources.list.d/influxdb.list
 
   apt-get -qq update
-  apt-get install -y telegraf
+  apt-get install -y --no-install-recommends telegraf
   sudo systemctl enable telegraf
 
   usermod -aG docker telegraf

@@ -1,8 +1,8 @@
 #! /bin/bash
-sudo apt-get -y install software-properties-common
+sudo apt-get -y install --no-install-recommends software-properties-common
 sudo apt-add-repository -y ppa:rael-gc/rvm
 sudo apt-get update
-sudo apt-get install -y rvm
+sudo apt-get install -y --no-install-recommends rvm
 sudo usermod -a -G rvm ubuntu
 sudo /usr/share/rvm/bin/rvm user gemsets
 sudo /usr/share/rvm/bin/rvm install ruby 2.7
