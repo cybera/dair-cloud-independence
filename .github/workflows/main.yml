@@ -166,7 +166,7 @@ jobs:
       
       - name: Layer 3 Test 1 - Test polls site for output
         run: |
-          ssh django -- "curl -s -A 'Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:59.0) Gecko/20100101 Firefox/59.0'  --location http://localhost/polls | curl -s -A "Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:59.0) Gecko/20100101 Firefox/59.0"  --location http://localhost/polls |  awk -vRS="</p>" '/<p>/{gsub(/.*<p>|\n+/,"");print;exit}' | grep ."
+          ssh django -- "curl -s -A 'Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:59.0) Gecko/20100101 Firefox/59.0'  --location http://localhost/polls |  awk -vRS="</p>" '/<p>/{gsub(/.*<p>|\n+/,"");print;exit}' | grep ."
 
       - name: Layer 3 Test 2 - Test Sensu
         run: |
