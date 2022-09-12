@@ -169,20 +169,30 @@ jobs:
       ################################ 
       # Layer 3 End to End           #
       ################################ 
-      - name: Layer 3 Setup - Install Terratest
+      - name: Layer 3 Setup - Install tools
         run: |
-          scp -r terraform/test django:~/
-          scp bin/Linux/terraform django:~/
-          ssh -o ServerAliveInterval=30 django sudo apt-get install -y --no-install-recommends golang
-          ssh django sudo cp /home/ubuntu/terraform /usr/bin/
-          ssh django cd test && go mod init "TestTerraformBasicExample" && go mod tidy -go=1.16 && go mod tidy -go=1.17
+          ssh django sudo apt install -y --no-install-recommends postgresql-client
       
-      - name: Layer 3 Test 1 - Run Example Terratest
+      - name: Layer 3 Test 1 - Test polls site for output
         run: |
-          ssh django cd test && go test -v -timeout 30m
+          ssh django curl -s -A "Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:59.0) Gecko/20100101 Firefox/59.0"  --location http://localhost/polls
+      
+      - name: Layer 3 Test 2 - Test Sensu
+        run: |
+          ssh django curl -s -A "Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:59.0) Gecko/20100101 Firefox/59.0" http://localhost:3000
+
+      - name: Layer 3 Test 3 - Test Influx
+        run: |
+          ssh django curl -i -XPOST http://localhost:8086/query 
+
+      - id: pgisup
+        name: Layer 3 Test 4 - Test Postgres
+        run: pg_isready -h localhost -p 5432 -U admin ::set-output name=key::value
+      - if: steps.pgisup.outputs.key == 'localhost:5432 - accepting connections'
+          
 
       ################################     
-      # End -- Teardown environment  #
+      # End -- Teardown environment  #  
       ################################
       - name: Teardown
         if: always()
