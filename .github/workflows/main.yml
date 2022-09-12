@@ -116,18 +116,6 @@ jobs:
       # Install Inspec on            #
       # remote server                #
       ################################
-     # - name: Layer 2 Setup Part 1  - Install Inspec on remote host
-     #   run: |
-     #     ssh django bash apps/install_inspec.sh
-     
-     # - name: Layer 2 Setup Part 2 - Finish installing Inspec
-     #   run: | 
-     #     ssh -o ServerAliveInterval=30 django sudo gem install inspec --no-document
-     #     ssh -o ServerAliveInterval=30 django sudo gem install inspec-bin --no-document
-     #     ssh django sudo ln -s /usr/share/rvm/rubies/ruby-2.7.2/bin/inspec /usr/local/bin/inspec
-     #     ssh django sudo ln -s /usr/share/rvm/rubies/ruby-2.7.2/bin/ruby_executable_hooks /usr/local/bin/ruby_executable_hooks
-     #    ssh django sudo inspec --chef-license=accept-silent
-     #    ssh django git clone https://github.com/dev-sec/linux-baseline
 
       - name: Layer 2 Setup - Install Inspec on Instance
         run: curl https://omnitruck.chef.io/install.sh | sudo bash -s -- -P inspec
@@ -177,27 +165,20 @@ jobs:
           ssh django sudo apt install -y --no-install-recommends postgresql-client
       
       - name: Layer 3 Test 1 - Test polls site for output
-        id: polls
         run: |
           ssh django "curl -s -A 'Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:59.0) Gecko/20100101 Firefox/59.0'  --location http://localhost/polls | curl -s -A "Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:59.0) Gecko/20100101 Firefox/59.0"  --location http://localhost/polls |  awk -vRS="</p>" '/<p>/{gsub(/.*<p>|\n+/,"");print;exit}'"
-        if: steps.polls.outputs.key == 'No polls are available.'
 
       - name: Layer 3 Test 2 - Test Sensu
-        id: sensu
         run: |
           ssh django "curl -s -A 'Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:59.0) Gecko/20100101 Firefox/59.0' http://localhost:3000 | awk -vRS="</p>" '/<p>/{gsub(/.*<p>|\n+/,"");print;exit}'"
-        if: steps.sensu.outputs.key == 'Sensu'
 
       - name: Layer 3 Test 3 - Test Influx
         id: influx
         run: |
           ssh django "curl -s -i -XPOST http://localhost:8086/query | grep 'X-Influxdb-Build'"
-        if: steps.influx.outputs.key == 'X-Influxdb-Build'
 
-      - id: pgisup
-        name: Layer 3 Test 4 - Test Postgres
-        run: ssh django pg_isready -h localhost -p 5432 -U admin ::set-output name=key::value
-        if: steps.pgisup.outputs.key == 'localhost:5432 - accepting connections'
+      - name: Layer 3 Test 4 - Test Postgres
+        run: ssh django pg_isready -h localhost -p 5432 -U admin
           
 
       ################################     
