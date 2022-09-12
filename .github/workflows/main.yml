@@ -188,7 +188,7 @@ jobs:
       - id: pgisup
         name: Layer 3 Test 4 - Test Postgres
         run: pg_isready -h localhost -p 5432 -U admin ::set-output name=key::value
-      - if: steps.pgisup.outputs.key == 'localhost:5432 - accepting connections'
+        if: steps.pgisup.outputs.key == 'localhost:5432 - accepting connections'
           
 
       ################################     
