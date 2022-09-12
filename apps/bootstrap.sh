@@ -23,6 +23,9 @@ install_docker () {
   apt-get install -y --no-install-recommends apt-transport-https ca-certificates curl software-properties-common monitoring-plugins
   curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
   echo "deb [arch=amd64] https://download.docker.com/linux/${DISTRIB_ID} ${DISTRIB_CODENAME} stable" > /etc/apt/sources.list.d/docker.list
+  curl -sL https://repos.influxdata.com/influxdb.key | apt-key add -
+  echo "deb https://repos.influxdata.com/${DISTRIB_ID} ${DISTRIB_CODENAME} stable" | tee /etc/apt/sources.list.d/influxdb.list
+
   apt-get -qq update > /dev/null
   apt-get install -y --no-install-recommends docker-ce
 }
@@ -128,10 +131,10 @@ install_sensu() {
 # Metrics via telegraf
 install_metrics() {
   echo -e "${GREEN} =====> Installing Telegraf${NC}"
-  curl -sL https://repos.influxdata.com/influxdb.key | apt-key add -
-  echo "deb https://repos.influxdata.com/${DISTRIB_ID} ${DISTRIB_CODENAME} stable" | tee /etc/apt/sources.list.d/influxdb.list
+  # curl -sL https://repos.influxdata.com/influxdb.key | apt-key add -
+  # echo "deb https://repos.influxdata.com/${DISTRIB_ID} ${DISTRIB_CODENAME} stable" | tee /etc/apt/sources.list.d/influxdb.list
 
-  apt-get -qq update
+  # apt-get -qq update
   apt-get install -y --no-install-recommends telegraf
   sudo systemctl enable telegraf
 
