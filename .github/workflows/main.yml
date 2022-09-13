@@ -1,38 +1,80 @@
-# This is a basic workflow to help you get started with Actions
+################################
+# This is a basic workflow to  #
+# help you get started         #
+# with Github Actions testing  #
+################################
 
 name: CI
 
-# Controls when the workflow will run
 on:
-  # Triggers the workflow on push or pull request events but only for the master branch
+  ################################
+  # Triggers the workflow on     #
+  # push or pull request         #
+  # events on the main or master #
+  # or when triggered from the   #
+  # actions tab                  #
+  ################################
   push:
-    branches: [ master ]
+    branches: [ master, main ]
   pull_request:
-    branches: [ master ]
+    branches: [ master, main ]
 
-  # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+################################
+# A workflow run is made up of #
+# one or more jobs that can    #
+# run sequentially or in       #
+# parallel                     #
+################################
 jobs:
-  # This workflow contains a single job called "build"
+
+  ################################
+  # This workflow contains a     #
+  # single job called "build"    #
+  ################################
   build:
-    # The type of runner that the job will run on
+
+    ################################
+    # The type of runner that      #
+    # the job will run on          #
+    ################################
     runs-on: ubuntu-latest
 
-    # Steps represent a sequence of tasks that will be executed as part of the job
+    ################################
+    # Steps represent a sequence   #
+    # of tasks that will be        #
+    # executed as part of the job  #
+    ################################
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+
+      ################################
+      # Checks-out your repository   #
+      # under $GITHUB_WORKSPACE, so  #
+      # your job can access it       #
+      ################################
       - uses: actions/checkout@v2
 
-      # Runs a single command using the runners shell
+      ################################
+      # Run Linter against code base #
+      ################################
+      - name: Layer 1 Test 1 - Lint Code Base
+        uses: github/super-linter@v4
+        continue-on-error: true
+        env:
+          VALIDATE_ALL_CODEBASE: true
+          DEFAULT_BRANCH: master
+          SUPPRESS_POSSUM: true
+
+      ################################
+      # Set up your testing          #
+      # environment                  #
+      ################################
       - name: Install curl and other dependencies
         run: |
-          sudo apt-get update
-          sudo apt-get install -y curl
+          sudo apt-get -qq install -y --no-install-recommends curl
           make create-sshkey
 
-      # Runs a set of commands using the runners shell
       - name: Setup env vars and tree
         shell: bash
         env:
@@ -40,85 +82,110 @@ jobs:
         run: |
           echo "$SUPER_SECRET" >> ./terraform/openstack/main.tf
 
-      # Layer 1 syntax check
-      - name: Layer 1 Test 1 - make plan Terraform syntax checks
+      ################################
+      # Layer 1 syntax check         #
+      ################################
+      - name: Layer 1 Test 2 - make plan Terraform syntax checks
         run: make plan ENV=openstack
-        
-      # Check syntax in apps/docker_files -- Just the docker_compose.yml?
-      
+
       # Can we check requirements, code, packages, etc for best practices?
-      
-      # Is this where we start with inspec?
+      # ^ This can be done with Dependabot - adding to instruction document
         
+      ################################
+      # Run Terraform and set up     #
+      # ssh config file              #
+      ################################
       - name: Build Stack
         run: | 
-          make auto-apply ENV=openstack
-          echo "PUBIP=$(make get-public-ip ENV=openstack)" >> $GITHUB_ENV
-      
-      # Install Inspec on remote server
-      # May need to find a better way to install ruby, but rbenv is installed local to the user so...
-      - name: Build Stack - Install Inspec on remote host
-        run: |
-          ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${{ env.PUBIP }} sudo apt-get update
-          ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${{ env.PUBIP }} sudo apt-get -y install software-properties-common
-          #ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${{ env.PUBIP }} sudo gpg --keyserver hkp://pool.sks-keyservers.net --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3 7D2BAF1CF37B13E2069D6956105BD0E739499BDB
-          ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${{ env.PUBIP }} sudo apt-add-repository -y ppa:rael-gc/rvm
-          ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${{ env.PUBIP }} sudo apt-get update
-          ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${{ env.PUBIP }} sudo apt-get install -y rvm
-          ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${{ env.PUBIP }} sudo usermod -a -G rvm ubuntu
-          ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${{ env.PUBIP }} /usr/share/rvm/bin/rvm user gemsets
-          ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${{ env.PUBIP }} /usr/share/rvm/bin/rvm install ruby 2.7
-          # Below line should be safe as long as 2.7/2 is the default 2.7, but is a source of breakage
-          ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${{ env.PUBIP }} sudo ln -s /usr/share/rvm/rubies/ruby-2.7.2/bin/gem /usr/local/bin/gem
-          ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${{ env.PUBIP }} sudo ln -s /usr/share/rvm/rubies/ruby-2.7.2/bin/ruby /usr/local/bin/ruby
+          make auto-apply ENV=openstack        
+          mkdir ~/.ssh
+          cp key/id_rsa ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          echo "Host django" > ~/.ssh/config 
+          echo " Hostname $(make get-public-ip ENV=openstack)" | tr -d '"' >> ~/.ssh/config
+          echo " User ubuntu" >> ~/.ssh/config 
+          echo " IdentityFile ~/.ssh/id_rsa" >> ~/.ssh/config
+          echo " StrictHostKeyChecking no"  >> ~/.ssh/config
+          echo " ConnectionAttempts 5" >> ~/.ssh/config
+          echo " ConnectTimeout 10" >> ~/.ssh/config
+          chmod 644 ~/.ssh/config
+        
+ 
+      ################################
+      # Install Inspec on            #
+      # remote server                #
+      ################################
 
-      # Layer 2 tests start
+      - name: Layer 2 Setup - Install Inspec on Instance
+        run: |
+          ssh django "curl https://omnitruck.chef.io/install.sh | sudo bash -s -- -P inspec"
+          ssh django "sudo inspec --chef-license=accept-silent"
+          ssh django "git clone https://github.com/dev-sec/linux-baseline"
+
+      ################################ 
+      # Layer 2 tests start          #
+      ################################ 
       - name: Layer 2 Test 1 - curl polls
-        run: curl -q http://${{ env.PUBIP }}/polls/
+        run: curl -q http://$(make get-public-ip ENV=openstack | tr -d '"' )/polls/
 
       - name: Layer 2 Test 2 - Check running docker containers
-        run: ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${{ env.PUBIP }} sudo docker ps
+        run: ssh django sudo docker ps
 
-      # Installing Inspec seperatly because it crashes
-      - name: Build Stack - Finish installing Inspec
-        #run: ssh -o ServerAliveInterval=30 -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${{ env.PUBIP }} "sh -c 'nohup sudo gem install inspec > /dev/null 2>&1 &'"
-        run: | 
-          ssh -o ServerAliveInterval=30 -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${{ env.PUBIP }} sudo gem install inspec
-          ssh -o ServerAliveInterval=30 -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${{ env.PUBIP }} sudo gem install inspec-bin
-          ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${{ env.PUBIP }} sudo ln -s /usr/share/rvm/rubies/ruby-2.7.2/bin/inspec /usr/local/bin/inspec
-          ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${{ env.PUBIP }} sudo ln -s /usr/share/rvm/rubies/ruby-2.7.2/bin/ruby_executable_hooks /usr/local/bin/ruby_executable_hooks
-          ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${{ env.PUBIP }} sudo inspec --chef-license=accept-silent
-          ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${{ env.PUBIP }} git clone https://github.com/dev-sec/linux-baseline
-      
-      # Layer 2 Unit Tests cont. but with more Inspec!
+      ################################
+      # Layer 2 Unit Tests contiinue # 
+      # but with more Inspec!        #
+      ################################
       - name: Layer 2 Test 3 - InSpect local system
         continue-on-error: true
-        run: ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${{ env.PUBIP }} sudo inspec exec linux-baseline
+        run: ssh django sudo inspec exec linux-baseline
 
       - name: Layer 2 Test 4 - InSpect sensu-backend Container
         continue-on-error: true
-        run: ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${{ env.PUBIP }} sudo inspec exec linux-baseline -t docker://sensu-backend
+        run: ssh django sudo inspec exec linux-baseline -t docker://sensu-backend
         
       - name: Layer 2 Test 5 - InSpect grafana Container
         continue-on-error: true
-        run: ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${{ env.PUBIP }} sudo inspec exec linux-baseline -t docker://grafana
+        run: ssh django sudo inspec exec linux-baseline -t docker://grafana
 
       - name: Layer 2 Test 6 - InSpect app Container
         continue-on-error: true
-        run: ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${{ env.PUBIP }} sudo inspec exec linux-baseline -t docker://app
+        run: ssh django sudo inspec exec linux-baseline -t docker://app
         
       - name: Layer 2 Test 7 - InSpect nginx Container
         continue-on-error: true
-        run: ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${{ env.PUBIP }} sudo inspec exec linux-baseline -t docker://nginx
+        run: ssh django sudo inspec exec linux-baseline -t docker://nginx
         
       - name: Layer 2 Test 8 - InSpect Postgres Container
         continue-on-error: true
-        run: ssh -o StrictHostKeyChecking=no -i key/id_rsa ubuntu@${{ env.PUBIP }} sudo inspec exec linux-baseline -t docker://postgres
+        run: ssh django sudo inspec exec linux-baseline -t docker://postgres
 
-      # Layer 3 End to End
-      # We need to loop in terratest I think
+      ################################ 
+      # Layer 3 End to End           #
+      ################################ 
+      - name: Layer 3 Setup - Install tools
+        run: |
+          ssh django sudo apt-get -qq install -y --no-install-recommends postgresql-client
+      
+      - name: Layer 3 Test 1 - Test polls site for output
+        run: |
+          ssh django -- "curl -s -A 'Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:59.0) Gecko/20100101 Firefox/59.0'  --location http://localhost/polls | grep 'No polls are available.'"
 
-      # End -- Teardown environment
+      - name: Layer 3 Test 2 - Test Sensu
+        run: |
+          ssh django -- "curl -s -A 'Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:59.0) Gecko/20100101 Firefox/59.0' http://localhost:3000 | grep 'Sensu'"
+
+      - name: Layer 3 Test 3 - Test Influx
+        id: influx
+        run: |
+          ssh django -- "curl -s -i -XPOST http://localhost:8086/query | grep 'X-Influxdb-Build'"
+
+      - name: Layer 3 Test 4 - Test Postgres
+        run: ssh django -- "pg_isready -h localhost -p 5432 -U admin | grep 'localhost:5432 - accepting connections'"
+          
+
+      ################################     
+      # End -- Teardown environment  #  
+      ################################
       - name: Teardown
         if: always()
         run: make destroy ENV=openstack

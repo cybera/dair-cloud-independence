@@ -20,11 +20,14 @@ DEBIAN_FRONTEND=noninteractive apt-get -qq -y upgrade
 # Install docker and dependencies
 install_docker () {
   echo -e "${GREEN} =====> Installing Docker${NC}"
-  apt-get install -y apt-transport-https ca-certificates curl software-properties-common monitoring-plugins
+  apt-get install -qq -y --no-install-recommends apt-transport-https ca-certificates curl software-properties-common monitoring-plugins
   curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
   echo "deb [arch=amd64] https://download.docker.com/linux/${DISTRIB_ID} ${DISTRIB_CODENAME} stable" > /etc/apt/sources.list.d/docker.list
+  curl -sL https://repos.influxdata.com/influxdb.key | apt-key add -
+  echo "deb https://repos.influxdata.com/${DISTRIB_ID} ${DISTRIB_CODENAME} stable" | tee /etc/apt/sources.list.d/influxdb.list
+
   apt-get -qq update > /dev/null
-  apt-get install -y docker-ce
+  apt-get -qq install -y --no-install-recommends docker-ce
 }
 
 # Install Docker Machine (15)
@@ -83,7 +86,7 @@ run_containers() {
 install_sensu() {
   echo -e "${GREEN} =====> Installing Sensu CLI tool and add checks${NC}"
   curl -s https://packagecloud.io/install/repositories/sensu/stable/script.deb.sh | sudo bash
-  sudo apt-get -y install sensu-go-agent sensu-go-cli
+  sudo apt-get -qq -y install sensu-go-agent sensu-go-cli
 
   # Configure sensu. Note DEFAULT password
   # admin: admin/P@ssw0rd!
@@ -128,11 +131,8 @@ install_sensu() {
 # Metrics via telegraf
 install_metrics() {
   echo -e "${GREEN} =====> Installing Telegraf${NC}"
-  curl -sL https://repos.influxdata.com/influxdb.key | apt-key add -
-  echo "deb https://repos.influxdata.com/${DISTRIB_ID} ${DISTRIB_CODENAME} stable" | tee /etc/apt/sources.list.d/influxdb.list
 
-  apt-get -qq update
-  apt-get install -y telegraf
+  apt-get -qq install -y --no-install-recommends telegraf
   sudo systemctl enable telegraf
 
   usermod -aG docker telegraf

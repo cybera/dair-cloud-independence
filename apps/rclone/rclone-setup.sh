@@ -2,7 +2,7 @@
 
 # Install unzip
 apt-get -qq update > /dev/null
-apt-get install -y unzip wget
+apt-get install -y --no-install-recommends unzip wget
 
 # Install rclone
 wget https://downloads.rclone.org/rclone-current-linux-amd64.zip

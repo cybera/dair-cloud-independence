@@ -4,8 +4,8 @@ variable "ssh_key" {}
 resource "null_resource" "copy_files" {
   connection {
     user        = "ubuntu"
-    host        = "${var.ip_address}"
-    private_key = "${var.ssh_key}"
+    host        = var.ip_address
+    private_key = var.ssh_key
   }
 
   provisioner "file" {
@@ -15,12 +15,12 @@ resource "null_resource" "copy_files" {
 }
 
 resource "null_resource" "provision_app" {
-  depends_on = ["null_resource.copy_files"]
+  depends_on = [ null_resource.copy_files ]
 
   connection {
     user        = "ubuntu"
-    host        = "${var.ip_address}"
-    private_key = "${var.ssh_key}"
+    host        = var.ip_address
+    private_key = var.ssh_key
   }
 
   provisioner "remote-exec" {
