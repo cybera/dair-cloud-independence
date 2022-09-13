@@ -56,17 +56,6 @@ jobs:
       - uses: actions/checkout@v2
 
       ################################
-      # Run Linter against code base #
-      ################################
-      - name: Layer 1 Test 1 - Lint Code Base
-        uses: github/super-linter@v4
-        continue-on-error: true
-        env:
-          VALIDATE_ALL_CODEBASE: true
-          DEFAULT_BRANCH: master
-          SUPPRESS_POSSUM: true
-
-      ################################
       # Set up your testing          #
       # environment                  #
       ################################
@@ -83,13 +72,18 @@ jobs:
           echo "$SUPER_SECRET" >> ./terraform/openstack/main.tf
 
       ################################
-      # Layer 1 syntax check         #
+      # Layer 1 syntax checks        #
       ################################
+      - name: Layer 1 Test 1 - Lint Code Base
+        uses: github/super-linter@v4
+        continue-on-error: true
+        env:
+          VALIDATE_ALL_CODEBASE: true
+          DEFAULT_BRANCH: master
+          SUPPRESS_POSSUM: true
+      
       - name: Layer 1 Test 2 - make plan Terraform syntax checks
         run: make plan ENV=openstack
-
-      # Can we check requirements, code, packages, etc for best practices?
-      # ^ This can be done with Dependabot - adding to instruction document
         
       ################################
       # Run Terraform and set up     #
