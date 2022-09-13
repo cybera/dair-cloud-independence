@@ -118,7 +118,7 @@ jobs:
       ################################
 
       - name: Layer 2 Setup - Install Inspec on Instance
-        run: curl https://omnitruck.chef.io/install.sh | sudo bash -s -- -P inspec
+        run: ssh django "curl https://omnitruck.chef.io/install.sh | sudo bash -s -- -P inspec"
 
       ################################ 
       # Layer 2 tests start          #
@@ -167,12 +167,12 @@ jobs:
       - name: Layer 3 Test 1 - Test polls site for output
         continue-on-error: true
         run: |
-          ssh django -- "curl -s -A 'Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:59.0) Gecko/20100101 Firefox/59.0'  --location http://localhost/polls |  awk -vRS="</p>" '/<p>/{gsub(/.*<p>|\n+/,"");print;exit}'"
+          ssh django -- "curl -s -A 'Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:59.0) Gecko/20100101 Firefox/59.0'  --location http://localhost/polls | grep 'No polls are available.'"
 
       - name: Layer 3 Test 2 - Test Sensu
         continue-on-error: true
         run: |
-          ssh django -- "curl -s -A 'Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:59.0) Gecko/20100101 Firefox/59.0' http://localhost:3000 | awk -vRS="</p>" '/<p>/{gsub(/.*<p>|\n+/,"");print;exit}'"
+          ssh django -- "curl -s -A 'Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:59.0) Gecko/20100101 Firefox/59.0' http://localhost:3000 | grep 'Sensu'"
 
       - name: Layer 3 Test 3 - Test Influx
         continue-on-error: true
