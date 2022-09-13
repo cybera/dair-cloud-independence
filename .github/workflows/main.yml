@@ -118,7 +118,10 @@ jobs:
       ################################
 
       - name: Layer 2 Setup - Install Inspec on Instance
-        run: ssh django "curl https://omnitruck.chef.io/install.sh | sudo bash -s -- -P inspec"
+        run: |
+          ssh django "curl https://omnitruck.chef.io/install.sh | sudo bash -s -- -P inspec"
+          ssh django "sudo inspec --chef-license=accept-silent"
+          ssh django "git clone https://github.com/dev-sec/linux-baseline"
 
       ################################ 
       # Layer 2 tests start          #
